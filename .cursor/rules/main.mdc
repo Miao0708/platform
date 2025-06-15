@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # AI 研发辅助平台 - Cursor Rules
 
 ## 📋 规则文档结构
@@ -41,5 +46,6 @@
 - 遵循 RESTful API 设计原则
 
 ---
+
 
 *这些规则旨在维护代码质量、一致性和团队生产力。请根据具体上下文和任务要求遵循相应的标准。* 

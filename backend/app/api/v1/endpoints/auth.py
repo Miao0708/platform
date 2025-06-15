@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlmodel import Session
 from app.api.v1.deps import get_db
-from app.crud.crud_user import user
+from app.crud.crud_user import user, user_login_log
 from app.schemas.user import (
     UserRegister, UserLogin, UserResponse,
     UserUpdate, PasswordChange, MessageResponse
@@ -131,7 +131,6 @@ def login(
     user.update_login_info(db, user_id=authenticated_user.id)
     
     # 记录登录日志
-    from app.crud.crud_user import user_login_log
     client_info = get_client_info(request)
     user_login_log.create_log(
         db=db,

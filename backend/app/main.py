@@ -3,9 +3,47 @@ FastAPI应用主入口
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlmodel import Session
 from app.core.config import settings
-from app.core.database import create_db_and_tables
+from app.core.database import create_db_and_tables, engine
 from app.api.v1.api import api_router
+from app.crud.crud_user import user
+from app.schemas.user import UserRegister
+
+
+def init_admin_user():
+    """初始化管理员用户"""
+    with Session(engine) as db:
+        # 检查是否已存在admin用户
+        admin_user = user.get_by_username(db, username="admin")
+        if not admin_user:
+            try:
+                # 创建admin用户
+                admin_data = UserRegister(
+                    username="admin",
+                    email="admin@platform.com",
+                    password="admin123456",  # 生产环境应使用更强密码
+                    full_name="系统管理员"
+                )
+                admin_user = user.create(db=db, obj_in=admin_data)
+                
+                # 设置为超级用户
+                admin_user.is_superuser = True
+                admin_user.is_verified = True
+                db.add(admin_user)
+                db.commit()
+                db.refresh(admin_user)
+                
+                print(f"✅ 管理员用户创建成功:")
+                print(f"   用户名: {admin_user.username}")
+                print(f"   邮箱: {admin_user.email}")
+                print(f"   密码: admin123456 (请及时修改)")
+                print(f"   超级用户: {admin_user.is_superuser}")
+                
+            except Exception as e:
+                print(f"❌ 创建管理员用户失败: {str(e)}")
+        else:
+            print(f"ℹ️  管理员用户已存在: {admin_user.username}")
 
 
 def create_application() -> FastAPI:
@@ -44,6 +82,9 @@ def create_application() -> FastAPI:
     
     # 创建数据库表
     create_db_and_tables()
+    
+    # 初始化管理员用户
+    init_admin_user()
 
     # 包含API路由
     app.include_router(api_router, prefix=settings.API_V1_STR)

@@ -153,12 +153,17 @@ export * from './ai'
 export * from './auth'
 export * from './users'
 
-// 暂时注释掉不存在的模块，避免编译错误
+// 新增的API模块
+export * from './ai-models'
+export * from './code-diff'
+export * from './pipelines'
+export * from './chat'
+
+// 现有的API模块（避免命名冲突，暂时注释）
 // export * from './requirements'
-// export * from './git'
 // export * from './prompts'
-// export * from './code-review'
-// export * from './test-cases'
 // export * from './tasks'
-// export * from './dashboard'
+// export * from './test-cases'
 // export * from './knowledge'
+// export * from './dashboard'
+// export * from './git'

@@ -11,15 +11,15 @@ export interface LoginRequest {
 // 登录响应数据
 export interface LoginResponse {
   access_token: string
-  refresh_token: string
   token_type: string
   expires_in: number
   user: {
-    id: string
+    id: number
     username: string
     email: string
-    nickname?: string
-    role: string
+    full_name: string
+    is_active: boolean
+    created_at: string
   }
 }
 
@@ -28,17 +28,12 @@ export interface RegisterRequest {
   username: string
   email: string
   password: string
-  full_name?: string
-}
-
-// 刷新Token请求参数
-export interface RefreshTokenRequest {
-  refresh_token: string
+  full_name: string
 }
 
 // 认证API
 export const authApi = {
-  // 用户登录 - 使用JSON格式
+  // 用户登录
   login: (data: LoginRequest): Promise<LoginResponse> =>
     api.post('/auth/login', data),
 
@@ -47,24 +42,8 @@ export const authApi = {
     api.post('/auth/register', data),
 
   // 刷新Token
-  refreshToken: (data: RefreshTokenRequest) =>
-    api.post('/auth/refresh', data),
-
-  // 用户登出
-  logout: () =>
-    api.post('/auth/logout'),
-
-  // 获取当前用户会话信息
-  getCurrentSession: () =>
-    api.get('/auth/session'),
-
-  // 获取用户登录日志
-  getLoginLogs: (params?: { page?: number; limit?: number }) =>
-    api.get('/auth/logs', { params }),
-
-  // 获取用户统计信息
-  getUserStats: () =>
-    api.get('/auth/stats')
+  refreshToken: () =>
+    api.post('/auth/refresh')
 }
 
 // 认证工具函数

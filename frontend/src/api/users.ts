@@ -1,19 +1,20 @@
 import { api } from './index'
 
-// 用户信息接口 - 简化版本
+// 用户信息接口
 export interface UserInfo {
-  id: string
+  id: number
   username: string
   email: string
-  nickname?: string
-  avatar?: string
+  full_name: string
+  is_active: boolean
   created_at: string
+  updated_at?: string
 }
 
-// 更新用户信息请求 - 简化版本
+// 更新用户信息请求
 export interface UpdateUserRequest {
+  full_name?: string
   email?: string
-  nickname?: string
 }
 
 // 修改密码请求
@@ -23,30 +24,19 @@ export interface ChangePasswordRequest {
   confirm_password: string
 }
 
-// 用户管理API - 简化接口路径
+// 用户管理API
 export const usersApi = {
   // 获取当前用户信息
-  get: (): Promise<UserInfo> =>
-    api.get('/user/get'),
+  getCurrentUser: (): Promise<UserInfo> =>
+    api.get('/users/me'),
 
   // 更新当前用户信息
-  update: (data: UpdateUserRequest): Promise<UserInfo> =>
-    api.post('/user/update', data),
+  updateCurrentUser: (data: UpdateUserRequest): Promise<UserInfo> =>
+    api.put('/users/me', data),
 
   // 修改用户密码
   changePassword: (data: ChangePasswordRequest) =>
-    api.post('/user/change-password', data),
-
-  // 上传用户头像
-  uploadAvatar: (file: File) => {
-    const formData = new FormData()
-    formData.append('avatar', file)
-    return api.post('/user/avatar', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
-  }
+    api.post('/users/change-password', data)
 }
 
 // 用户工具函数
@@ -82,7 +72,7 @@ export const userUtils = {
 
   // 获取用户头像URL
   getAvatarUrl: (userInfo: UserInfo): string => {
-    return userInfo.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userInfo.username}`
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${userInfo.username}`
   },
 
   // 格式化最后登录时间
@@ -115,10 +105,6 @@ export const userUtils = {
     
     if (data.full_name && data.full_name.length > 50) {
       errors.push('姓名长度不能超过50个字符')
-    }
-    
-    if (data.bio && data.bio.length > 500) {
-      errors.push('个人简介长度不能超过500个字符')
     }
     
     return errors
