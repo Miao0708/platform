@@ -25,14 +25,18 @@ def get_prompts(
 ):
     """获取Prompt模板列表"""
     try:
+        print(f"[DEBUG] get_prompts called with category={category}, skip={skip}, limit={limit}")
+        
         if category:
             prompts = prompt_template.get_by_category(db, category=category)
         else:
             prompts = prompt_template.get_multi(db, skip=skip, limit=limit)
         
+        print(f"[DEBUG] Found {len(prompts)} prompts")
+        
         prompt_list = []
         for prompt in prompts:
-            prompt_list.append({
+            prompt_data = {
                 "id": str(prompt.id),
                 "name": prompt.name,
                 "identifier": prompt.identifier,
@@ -41,21 +45,29 @@ def get_prompts(
                 "category": prompt.category,
                 "variables": [],  # 暂时返回空数组
                 "is_active": prompt.is_active,
-                "usage_count": 0,  # 暂时返回0
-                "created_at": prompt.created_at.isoformat() + "Z" if prompt.created_at else None,
-                "updated_at": prompt.updated_at.isoformat() + "Z" if prompt.updated_at else None
-            })
+                "usage_count": 0  # 暂时返回0
+            }
+            prompt_list.append(prompt_data)
         
-        return StandardJSONResponse(
-            content=prompt_list,
-            message="获取Prompt模板列表成功"
-        )
+        print(f"[DEBUG] Returning {len(prompt_list)} prompts")
+        
+        return {
+            "success": True,
+            "data": prompt_list,
+            "message": "获取Prompt模板列表成功"
+        }
+        
     except Exception as e:
-        return StandardJSONResponse(
-            content=None,
-            status_code=500,
-            message=f"获取Prompt模板列表失败: {str(e)}"
-        )
+        import traceback
+        error_detail = traceback.format_exc()
+        print(f"[ERROR] get_prompts failed: {str(e)}")
+        print(f"[ERROR] Traceback: {error_detail}")
+        
+        return {
+            "success": False,
+            "data": None,
+            "message": f"获取Prompt模板列表失败: {str(e)}"
+        }
 
 
 @router.post("/prompts", tags=["AI Prompt"])
@@ -85,8 +97,7 @@ def create_prompt(
             "description": prompt.description,
             "category": prompt.category,
             "variables": [],  # 暂时返回空数组
-            "is_active": prompt.is_active,
-            "created_at": prompt.created_at.isoformat() + "Z"
+            "is_active": prompt.is_active
         }
         
         return StandardJSONResponse(
@@ -126,9 +137,7 @@ def get_prompt_detail(
             "category": prompt.category,
             "variables": [],  # 暂时返回空数组
             "is_active": prompt.is_active,
-            "usage_count": 0,  # 暂时返回0
-            "created_at": prompt.created_at.isoformat() + "Z" if prompt.created_at else None,
-            "updated_at": prompt.updated_at.isoformat() + "Z" if prompt.updated_at else None
+            "usage_count": 0  # 暂时返回0
         }
         
         return StandardJSONResponse(
@@ -180,8 +189,7 @@ def update_prompt(
             "description": updated_prompt.description,
             "category": updated_prompt.category,
             "variables": [],  # 暂时返回空数组
-            "is_active": updated_prompt.is_active,
-            "updated_at": updated_prompt.updated_at.isoformat() + "Z" if updated_prompt.updated_at else None
+            "is_active": updated_prompt.is_active
         }
         
         return StandardJSONResponse(

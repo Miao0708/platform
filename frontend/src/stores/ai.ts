@@ -55,7 +55,7 @@ export const useAIStore = defineStore('ai', () => {
     }
   }
 
-  const createModelConfig = async (data: Omit<AIModelConfig, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const createModelConfig = async (data: Omit<AIModelConfig, 'id'>) => {
     try {
       const newConfig = await aiModelApi.createModelConfig(data)
       modelConfigs.value.push(newConfig)
@@ -231,7 +231,7 @@ export const useAIStore = defineStore('ai', () => {
     }
   }
 
-  const createPromptTemplate = async (data: Omit<PromptTemplate, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>) => {
+  const createPromptTemplate = async (data: Omit<PromptTemplate, 'id' | 'usageCount'>) => {
     try {
       const newTemplate = await promptApi.createPromptTemplate(data)
       promptTemplates.value.push(newTemplate)

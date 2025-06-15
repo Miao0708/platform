@@ -26,8 +26,7 @@ export interface RequirementInfo {
   complexity?: 'low' | 'medium' | 'high'
   estimated_hours?: number
   tags?: string[]
-  created_at: string
-  updated_at?: string
+
 }
 
 // 创建需求请求

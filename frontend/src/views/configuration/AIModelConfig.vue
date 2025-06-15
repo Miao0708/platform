@@ -460,8 +460,7 @@ const loadModelConfigs = async () => {
       temperature: model.temperature,
       isDefault: model.is_default,
       isActive: model.is_active,
-      createdAt: model.created_at,
-      updatedAt: model.updated_at
+      
     }))
   } catch (error) {
     console.error('Load model configs failed:', error)

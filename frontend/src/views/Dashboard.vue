@@ -129,7 +129,7 @@
             >
               <div class="task-info">
                 <div class="task-name">{{ task.name }}</div>
-                <div class="task-time">{{ task.createdAt }}</div>
+                <div class="task-time">{{ task.status }}</div>
               </div>
               <el-tag :type="getTaskTagType(task.status)">
                 {{ getTaskStatusText(task.status) }}
@@ -172,19 +172,19 @@ const recentTasks = ref([
     id: '1',
     name: '用户登录模块代码评审',
     status: 'completed' as TaskStatus,
-    createdAt: '2024-01-15 14:30'
+    
   },
   {
     id: '2',
     name: '支付流程测试用例生成',
     status: 'running' as TaskStatus,
-    createdAt: '2024-01-15 13:45'
+    
   },
   {
     id: '3',
     name: '数据库连接模块评审',
     status: 'pending' as TaskStatus,
-    createdAt: '2024-01-15 12:20'
+    
   }
 ])
 

@@ -284,8 +284,7 @@ const createNewConversation = () => {
     modelConfigId: currentModelId.value || availableModels.value[0]?.id || '',
     totalTokens: 0,
     lastMessageAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+
   }
   
   conversations.value.unshift(newConversation)

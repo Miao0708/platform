@@ -43,7 +43,7 @@ def get_ai_models(db: Session = Depends(get_db)):
                 "total_tokens_used": model.total_tokens_used,
                 "last_used_at": model.last_used_at,
                 "extra_config": model.extra_config,
-                "created_at": model.created_at,
+    
                 "updated_at": model.updated_at
             }
             model_list.append(model_data)
@@ -131,8 +131,7 @@ def get_ai_model(
             "total_tokens_used": model.total_tokens_used,
             "last_used_at": model.last_used_at,
             "extra_config": model.extra_config,
-            "created_at": model.created_at,
-            "updated_at": model.updated_at
+
         }
         
         return StandardJSONResponse(

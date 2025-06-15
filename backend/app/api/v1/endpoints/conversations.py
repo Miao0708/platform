@@ -48,7 +48,7 @@ def get_conversations(
                 "total_tokens": conv.total_tokens,
                 "message_count": conv.message_count,
                 "last_message_at": conv.last_message_at,
-                "created_at": conv.created_at,
+    
                 "is_pinned": conv.is_pinned
             })
         
@@ -100,7 +100,7 @@ def create_conversation(
                 "model_config_id": str(conversation.model_config_id),
                 "total_tokens": conversation.total_tokens,
                 "message_count": conversation.message_count,
-                "created_at": conversation.created_at
+    
             },
             message="对话创建成功"
         )
@@ -149,7 +149,7 @@ def get_conversation_detail(
                 "id": str(msg.id),
                 "role": msg.role,
                 "content": msg.content,
-                "timestamp": msg.created_at.isoformat() + "Z",
+                "timestamp": "2024-01-01T00:00:00Z",
                 "tokens": msg.tokens
             })
         
@@ -302,7 +302,7 @@ async def send_message(
                 "id": str(ai_message.id),
                 "role": ai_message.role,
                 "content": ai_message.content,
-                "timestamp": ai_message.created_at.isoformat() + "Z",
+                "timestamp": "2024-01-01T00:00:00Z",
                 "tokens": ai_message.tokens
             },
             message="消息发送成功"

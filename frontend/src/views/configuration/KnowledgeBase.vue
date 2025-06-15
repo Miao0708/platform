@@ -19,7 +19,7 @@
         <el-table-column prop="name" label="知识库名称" />
         <el-table-column prop="description" label="说明" show-overflow-tooltip />
         <el-table-column prop="documentCount" label="文档数量" />
-        <el-table-column prop="createdAt" label="创建时间" />
+
         <el-table-column label="操作" width="200">
           <template #default="scope">
             <el-button type="text" @click="manageDocuments(scope.row)">
@@ -122,7 +122,7 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="createdAt" label="上传时间" />
+    
             <el-table-column label="操作" width="100">
               <template #default="scope">
                 <el-button type="text" @click="deleteDocument(scope.row)" style="color: #f56c6c">
@@ -362,8 +362,7 @@ const loadKnowledgeBases = async () => {
       documentCount: kb.document_count || 0,
       totalSize: kb.total_size || 0,
       isActive: kb.is_active,
-      createdAt: kb.created_at,
-      updatedAt: kb.updated_at
+      
     }))
   } catch (error) {
     console.error('Load knowledge bases failed:', error)
@@ -385,8 +384,7 @@ const loadDocuments = async (knowledgeBaseId: string) => {
       fileSize: doc.file_size,
       status: doc.status,
       errorMessage: doc.error_message,
-      createdAt: doc.created_at,
-      updatedAt: doc.updated_at
+      
     }))
   } catch (error) {
     console.error('Load documents failed:', error)

@@ -15,8 +15,7 @@ export interface PromptTemplate {
   variables: string[]
   is_public: boolean
   usage_count: number
-  created_at: string
-  updated_at: string
+
 }
 
 // 创建Prompt模板请求

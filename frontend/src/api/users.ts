@@ -7,8 +7,7 @@ export interface UserInfo {
   email: string
   full_name: string
   is_active: boolean
-  created_at: string
-  updated_at?: string
+
 }
 
 // 更新用户信息请求

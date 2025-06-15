@@ -92,8 +92,7 @@ def create_requirement(
             "category": req.category,
             "priority": req.priority,
             "status": req.status,
-            "input_type": req.input_type,
-            "created_at": req.created_at.isoformat() + "Z"
+            "input_type": req.input_type
         }
         
         return StandardJSONResponse(
@@ -186,8 +185,7 @@ async def upload_requirement_file(
             "category": req.category,
             "priority": req.priority,
             "status": req.status,
-            "input_type": req.input_type,
-            "created_at": req.created_at.isoformat() + "Z"
+            "input_type": req.input_type
         }
         
         return StandardJSONResponse(
@@ -238,8 +236,7 @@ def get_requirement_detail(
             "processing_time": req.processing_time,
             "error_message": req.error_message,
             "task_metadata": req.task_metadata,
-            "created_at": req.created_at.isoformat() + "Z" if req.created_at else None,
-            "updated_at": req.updated_at.isoformat() + "Z" if req.updated_at else None
+
         }
         
         return StandardJSONResponse(
@@ -280,8 +277,7 @@ def update_requirement(
             "category": updated_req.category,
             "priority": updated_req.priority,
             "complexity": updated_req.complexity,
-            "estimated_hours": updated_req.estimated_hours,
-            "updated_at": updated_req.updated_at.isoformat() + "Z" if updated_req.updated_at else None
+            "estimated_hours": updated_req.estimated_hours
         }
         
         return StandardJSONResponse(

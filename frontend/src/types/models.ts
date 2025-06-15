@@ -1,8 +1,6 @@
 // 基础类型定义
 export interface BaseModel {
   id: string
-  createdAt: string
-  updatedAt: string
 }
 
 // 用户相关类型
@@ -15,8 +13,6 @@ export interface UserInfo {
   department?: string
   position?: string
   roles: string[]
-  createdAt?: string
-  updatedAt?: string
 }
 
 // Git 配置相关类型
