@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sqlmodel import create_engine, Session
+from sqlmodel import create_engine, Session, select
 from app.core.config import settings
 from app.models.prompt import PromptTemplate
 from app.models.ai_model import AIModelConfig
@@ -129,9 +129,7 @@ def init_prompt_templates(db: Session):
     
     for template_data in prompt_templates:
         # 检查是否已存在
-        existing = db.query(PromptTemplate).filter(
-            PromptTemplate.identifier == template_data["identifier"]
-        ).first()
+        existing = db.exec(select(PromptTemplate).where(PromptTemplate.identifier == template_data["identifier"])).first()
         
         if not existing:
             template = PromptTemplate(**template_data)

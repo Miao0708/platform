@@ -49,14 +49,11 @@ def get_prompts(
             prompt_data = {
                 "id": str(prompt.id),
                 "name": prompt.name,
-                "identifier": prompt.identifier,
                 "content": prompt.content,
                 "description": prompt.description,
                 "category": prompt.category,
                 "tags": prompt.tags or [],
-                "variables": prompt.variables or [],
-                "is_active": prompt.is_active,
-                "usage_count": prompt.usage_count
+                "updated_at": prompt.updated_at.isoformat() if prompt.updated_at else prompt.created_at.isoformat()
             }
             prompt_list.append(prompt_data)
         
@@ -88,37 +85,27 @@ def create_prompt(
 ):
     """创建Prompt模板"""
     try:
-        # 检查标识符是否已存在
-        existing_prompt = prompt_template.get_by_identifier(db, identifier=prompt_in.identifier)
-        if existing_prompt:
-            return StandardJSONResponse(
-                content=None,
-                status_code=400,
-                message=f"标识符 '{prompt_in.identifier}' 已存在"
-            )
-        
         prompt = prompt_template.create(db=db, obj_in=prompt_in)
         
         prompt_data = {
             "id": str(prompt.id),
             "name": prompt.name,
-            "identifier": prompt.identifier,
             "content": prompt.content,
             "description": prompt.description,
             "category": prompt.category,
-            "variables": [],  # 暂时返回空数组
-            "is_active": prompt.is_active
+            "tags": prompt.tags or [],
+            "updated_at": prompt.updated_at.isoformat() if prompt.updated_at else prompt.created_at.isoformat()
         }
         
         return StandardJSONResponse(
             content=prompt_data,
-            message="Prompt模板创建成功"
+            message="Prompt创建成功"
         )
     except Exception as e:
         return StandardJSONResponse(
             content=None,
             status_code=500,
-            message=f"创建Prompt模板失败: {str(e)}"
+            message=f"创建Prompt失败: {str(e)}"
         )
 
 

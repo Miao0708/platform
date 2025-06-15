@@ -14,3 +14,7 @@ _pycache_
 *.pyzwz
 *.pyzwzw
 .vscode
+*.log
+*.db
+*.sqlite3
+*.sqlite

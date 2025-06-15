@@ -35,12 +35,31 @@ class CRUDPromptTemplate(CRUDBase[PromptTemplate, PromptTemplateCreate, PromptTe
     
     def create(self, db: Session, *, obj_in: PromptTemplateCreate) -> PromptTemplate:
         """创建Prompt模板"""
-        # 检查标识符是否已存在
-        existing = self.get_by_identifier(db, identifier=obj_in.identifier)
-        if existing:
-            raise ValueError(f"Prompt标识符 '{obj_in.identifier}' 已存在")
+        import uuid
+        import re
         
-        return super().create(db, obj_in=obj_in)
+        # 根据名称自动生成identifier
+        base_identifier = re.sub(r'[^a-zA-Z0-9\u4e00-\u9fff]', '_', obj_in.name.lower())
+        if not base_identifier:
+            base_identifier = "prompt"
+        
+        # 确保identifier唯一
+        identifier = base_identifier
+        counter = 1
+        while self.get_by_identifier(db, identifier=identifier):
+            identifier = f"{base_identifier}_{counter}"
+            counter += 1
+        
+        # 创建对象时包含自动生成的identifier
+        obj_data = obj_in.model_dump()
+        obj_data["identifier"] = identifier
+        
+        from app.models.prompt import PromptTemplate
+        db_obj = PromptTemplate(**obj_data)
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
     
     def update(
         self, db: Session, *, db_obj: PromptTemplate, obj_in: PromptTemplateUpdate

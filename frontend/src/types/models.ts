@@ -76,8 +76,44 @@ export interface RequirementDocument extends BaseModel {
   optimizedContent?: string
   source: 'upload' | 'manual'
   originalFilename?: string
+  fileType?: 'pdf' | 'md' | 'txt' | 'docx'
   status: 'pending' | 'processing' | 'completed' | 'failed'
   parseTaskId?: string
+  promptTemplateId?: string
+  modelConfigId?: string
+  errorMessage?: string
+  taskStartedAt?: string
+  taskCompletedAt?: string
+}
+
+// 需求分析任务
+export interface RequirementAnalysisTask extends BaseModel {
+  requirementDocumentId: string
+  promptTemplateId: string
+  modelConfigId: string
+  status: TaskStatus
+  result?: string
+  errorMessage?: string
+  tokensUsed?: number
+  executionTime?: number // 执行时间（秒）
+  startedAt?: string
+  completedAt?: string
+}
+
+// 需求测试分析任务
+export interface RequirementTestTask extends BaseModel {
+  name: string
+  requirementId?: string
+  requirementContent?: string
+  promptTemplateId: string
+  modelConfigId: string
+  status: TaskStatus
+  result?: RequirementTestTaskResult
+  errorMessage?: string
+  tokensUsed?: number
+  executionTime?: number
+  startedAt?: string
+  completedAt?: string
 }
 
 // 流水线任务相关类型

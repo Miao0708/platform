@@ -6,6 +6,7 @@ from .git import GlobalGitCredential, Repository
 from .prompt import PromptTemplate
 from .knowledge_base import KnowledgeBase, Document, DocumentChunk
 from .pipeline import CodeDiff, RequirementText
+from .requirement import RequirementDocument, RequirementAnalysisTask, RequirementTestTask
 from .task import CodeDiffTask, RequirementParseTask, PipelineTask, TaskExecution
 from .user import User
 from .ai_model import AIModelConfig, AIModelTestResult
@@ -21,6 +22,9 @@ __all__ = [
     "DocumentChunk",
     "CodeDiff",
     "RequirementText",
+    "RequirementDocument",
+    "RequirementAnalysisTask",
+    "RequirementTestTask",
     "PipelineTask",
     "TaskExecution",
     "CodeDiffTask",

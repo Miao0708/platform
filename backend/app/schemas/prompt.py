@@ -9,7 +9,6 @@ from pydantic import BaseModel, Field
 class PromptTemplateCreate(BaseModel):
     """创建Prompt模板的请求模式"""
     name: str = Field(..., description="模板名称")
-    identifier: str = Field(..., description="唯一标识符")
     content: str = Field(..., description="Prompt内容")
     description: Optional[str] = Field(None, description="模板说明")
     category: Optional[str] = Field(None, description="模板分类")
@@ -21,7 +20,6 @@ class PromptTemplateCreate(BaseModel):
             "examples": [
                 {
                     "name": "代码评审-安全漏洞扫描",
-                    "identifier": "code_review_security",
                     "content": "你是一个代码安全专家，请分析以下代码差异中的安全漏洞：\n\n{{code_diff}}\n\n请重点关注：\n1. SQL注入\n2. XSS攻击\n3. 权限控制\n4. 数据验证",
                     "description": "专门用于检测代码中安全漏洞的Prompt模板",
                     "category": "code_review"
