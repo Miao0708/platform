@@ -141,6 +141,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules, type UploadInstance } from 'element-plus'
 import { UploadFilled } from '@element-plus/icons-vue'
+import { knowledgeApi } from '@/api/knowledge'
 import type { KnowledgeBase, KnowledgeDocument } from '@/types'
 
 // 表单引用
@@ -220,14 +221,23 @@ const saveKnowledgeBase = async () => {
     await knowledgeBaseFormRef.value.validate()
     saving.value = true
     
-    // TODO: 调用API保存知识库
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const requestData = {
+      name: knowledgeBaseForm.name,
+      description: knowledgeBaseForm.description
+    }
+    
+    if (isEdit.value) {
+      await knowledgeApi.updateKnowledgeBase(knowledgeBaseForm.id, requestData)
+    } else {
+      await knowledgeApi.createKnowledgeBase(requestData)
+    }
     
     ElMessage.success(isEdit.value ? '知识库更新成功' : '知识库创建成功')
     dialogVisible.value = false
     loadKnowledgeBases()
   } catch (error) {
     console.error('Save knowledge base failed:', error)
+    ElMessage.error(isEdit.value ? '知识库更新失败' : '知识库创建失败')
   } finally {
     saving.value = false
   }
@@ -246,13 +256,15 @@ const deleteKnowledgeBase = async (knowledgeBase: KnowledgeBase) => {
       }
     )
     
-    // TODO: 调用API删除知识库
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await knowledgeApi.deleteKnowledgeBase(knowledgeBase.id)
     
     ElMessage.success('知识库删除成功')
     loadKnowledgeBases()
-  } catch {
-    // 用户取消
+  } catch (error: any) {
+    if (error?.name !== 'cancel') {
+      console.error('Delete knowledge base failed:', error)
+      ElMessage.error('知识库删除失败')
+    }
   }
 }
 
@@ -340,41 +352,45 @@ const getStatusText = (status: string) => {
 // 加载知识库列表
 const loadKnowledgeBases = async () => {
   try {
-    // TODO: 调用API加载知识库列表
-    // 模拟数据
-    knowledgeBases.value = [
-      {
-        id: '1',
-        name: '项目设计文档',
-        description: '包含系统架构、API设计等文档',
-        createdAt: '2024-01-15 10:30:00',
-        updatedAt: '2024-01-15 10:30:00'
-      }
-    ]
+    const result = await knowledgeApi.getKnowledgeBases()
+    
+    // 转换数据格式以匹配前端类型
+    knowledgeBases.value = (result || []).map((kb: any) => ({
+      id: kb.id,
+      name: kb.name,
+      description: kb.description,
+      documentCount: kb.document_count || 0,
+      totalSize: kb.total_size || 0,
+      isActive: kb.is_active,
+      createdAt: kb.created_at,
+      updatedAt: kb.updated_at
+    }))
   } catch (error) {
     console.error('Load knowledge bases failed:', error)
+    ElMessage.error('加载知识库列表失败')
   }
 }
 
 // 加载文档列表
 const loadDocuments = async (knowledgeBaseId: string) => {
   try {
-    // TODO: 调用API加载文档列表
-    // 模拟数据
-    documents.value = [
-      {
-        id: '1',
-        knowledgeBaseId,
-        filename: 'API设计文档.md',
-        fileType: 'md',
-        fileSize: 1024 * 50,
-        status: 'completed',
-        createdAt: '2024-01-15 10:30:00',
-        updatedAt: '2024-01-15 10:30:00'
-      }
-    ]
+    const result = await knowledgeApi.getDocuments(knowledgeBaseId)
+    
+    // 转换数据格式以匹配前端类型
+    documents.value = (result || []).map((doc: any) => ({
+      id: doc.id,
+      knowledgeBaseId: doc.knowledge_base_id,
+      filename: doc.filename,
+      fileType: doc.file_type,
+      fileSize: doc.file_size,
+      status: doc.status,
+      errorMessage: doc.error_message,
+      createdAt: doc.created_at,
+      updatedAt: doc.updated_at
+    }))
   } catch (error) {
     console.error('Load documents failed:', error)
+    ElMessage.error('加载文档列表失败')
   }
 }
 

@@ -39,9 +39,9 @@ def get_prompts(
                 "content": prompt.content,
                 "description": prompt.description,
                 "category": prompt.category,
-                "variables": prompt.variables,
+                "variables": [],  # 暂时返回空数组
                 "is_active": prompt.is_active,
-                "usage_count": prompt.usage_count,
+                "usage_count": 0,  # 暂时返回0
                 "created_at": prompt.created_at.isoformat() + "Z" if prompt.created_at else None,
                 "updated_at": prompt.updated_at.isoformat() + "Z" if prompt.updated_at else None
             })
@@ -84,7 +84,7 @@ def create_prompt(
             "content": prompt.content,
             "description": prompt.description,
             "category": prompt.category,
-            "variables": prompt.variables,
+            "variables": [],  # 暂时返回空数组
             "is_active": prompt.is_active,
             "created_at": prompt.created_at.isoformat() + "Z"
         }
@@ -124,9 +124,9 @@ def get_prompt_detail(
             "content": prompt.content,
             "description": prompt.description,
             "category": prompt.category,
-            "variables": prompt.variables,
+            "variables": [],  # 暂时返回空数组
             "is_active": prompt.is_active,
-            "usage_count": prompt.usage_count,
+            "usage_count": 0,  # 暂时返回0
             "created_at": prompt.created_at.isoformat() + "Z" if prompt.created_at else None,
             "updated_at": prompt.updated_at.isoformat() + "Z" if prompt.updated_at else None
         }
@@ -179,7 +179,7 @@ def update_prompt(
             "content": updated_prompt.content,
             "description": updated_prompt.description,
             "category": updated_prompt.category,
-            "variables": updated_prompt.variables,
+            "variables": [],  # 暂时返回空数组
             "is_active": updated_prompt.is_active,
             "updated_at": updated_prompt.updated_at.isoformat() + "Z" if updated_prompt.updated_at else None
         }

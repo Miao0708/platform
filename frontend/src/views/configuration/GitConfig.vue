@@ -122,6 +122,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import { gitApi } from '@/api/git'
 import type { GitCredential, GitRepository } from '@/types'
 
 // 表单引用
@@ -186,12 +187,16 @@ const saveCredential = async () => {
     await credentialFormRef.value.validate()
     saving.value = true
     
-    // TODO: 调用API保存凭证
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await gitApi.createCredential({
+      username: credentialForm.username,
+      token: credentialForm.token
+    })
     
     ElMessage.success('凭证保存成功')
+    loadCredentials()
   } catch (error) {
     console.error('Save credential failed:', error)
+    ElMessage.error('凭证保存失败')
   } finally {
     saving.value = false
   }
@@ -205,15 +210,34 @@ const testConnection = async () => {
     await credentialFormRef.value.validate()
     testing.value = true
     
-    // TODO: 调用API测试连接
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    const result = await gitApi.testConnection()
     
-    ElMessage.success('连接测试成功')
+    if (result.success) {
+      ElMessage.success('连接测试成功')
+    } else {
+      ElMessage.error(`连接测试失败: ${result.message}`)
+    }
   } catch (error) {
     console.error('Test connection failed:', error)
     ElMessage.error('连接测试失败')
   } finally {
     testing.value = false
+  }
+}
+
+// 加载凭证列表
+const loadCredentials = async () => {
+  try {
+    const credentials = await gitApi.getCredentials()
+    if (credentials && credentials.length > 0) {
+      const activeCredential = credentials.find((c: any) => c.isActive)
+      if (activeCredential) {
+        credentialForm.username = activeCredential.username
+        // 不显示token内容，只显示已配置状态
+      }
+    }
+  } catch (error) {
+    console.error('Load credentials failed:', error)
   }
 }
 
@@ -244,14 +268,26 @@ const saveRepository = async () => {
     await repositoryFormRef.value.validate()
     saving.value = true
     
-    // TODO: 调用API保存仓库
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    if (isEdit.value) {
+      await gitApi.updateRepository(repositoryForm.id, {
+        alias: repositoryForm.alias,
+        url: repositoryForm.url,
+        default_base_branch: repositoryForm.defaultBaseBranch
+      })
+    } else {
+      await gitApi.createRepository({
+        alias: repositoryForm.alias,
+        url: repositoryForm.url,
+        default_base_branch: repositoryForm.defaultBaseBranch
+      })
+    }
     
     ElMessage.success(isEdit.value ? '仓库更新成功' : '仓库添加成功')
     dialogVisible.value = false
     loadRepositories()
   } catch (error) {
     console.error('Save repository failed:', error)
+    ElMessage.error(isEdit.value ? '仓库更新失败' : '仓库添加失败')
   } finally {
     saving.value = false
   }
@@ -270,37 +306,31 @@ const deleteRepository = async (repository: GitRepository) => {
       }
     )
     
-    // TODO: 调用API删除仓库
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await gitApi.deleteRepository(repository.id)
     
     ElMessage.success('仓库删除成功')
     loadRepositories()
-  } catch {
-    // 用户取消
+  } catch (error: any) {
+    if (error?.name !== 'cancel') {
+      console.error('Delete repository failed:', error)
+      ElMessage.error('仓库删除失败')
+    }
   }
 }
 
 // 加载仓库列表
 const loadRepositories = async () => {
   try {
-    // TODO: 调用API加载仓库列表
-    // 模拟数据
-    repositories.value = [
-      {
-        id: '1',
-        alias: '核心交易系统',
-        url: 'https://github.com/example/trading-system.git',
-        defaultBaseBranch: 'main',
-        createdAt: '2024-01-15 10:30:00',
-        updatedAt: '2024-01-15 10:30:00'
-      }
-    ]
+    const result = await gitApi.getRepositories()
+    repositories.value = result || []
   } catch (error) {
     console.error('Load repositories failed:', error)
+    ElMessage.error('加载仓库列表失败')
   }
 }
 
 onMounted(() => {
+  loadCredentials()
   loadRepositories()
 })
 </script>

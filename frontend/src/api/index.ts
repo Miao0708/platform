@@ -64,7 +64,7 @@ request.interceptors.request.use(
 
 // 响应拦截器
 request.interceptors.response.use(
-  (response: AxiosResponse<ApiResponse>) => {
+  (response: AxiosResponse) => {
     // 数据格式转换：确保响应数据为camelCase格式
     let responseData = response.data
     if (responseData && typeof responseData === 'object') {
@@ -79,16 +79,22 @@ request.interceptors.response.use(
       convertedData: responseData
     })
 
-    const { code, message, data } = responseData
+    // 检查是否是标准化API响应格式
+    if (responseData && typeof responseData === 'object' && 'code' in responseData) {
+      const { code, message, data } = responseData as ApiResponse
+      
+      // 成功响应
+      if (code === 200) {
+        return data
+      }
 
-    // 成功响应
-    if (code === 200) {
-      return data
+      // 业务错误
+      ElMessage.error(message || '请求失败')
+      return Promise.reject(new Error(message || '请求失败'))
     }
 
-    // 业务错误
-    ElMessage.error(message || '请求失败')
-    return Promise.reject(new Error(message || '请求失败'))
+    // 直接返回数据（非标准化格式）
+    return responseData
   },
   (error) => {
     console.error('Response error:', error)
@@ -132,19 +138,19 @@ export default request
 
 // 导出常用的请求方法
 export const api = {
-  get: <T = any>(url: string, config?: InternalAxiosRequestConfig): Promise<T> =>
+  get: <T = any>(url: string, config?: any): Promise<T> =>
     request.get(url, config),
 
-  post: <T = any>(url: string, data?: any, config?: InternalAxiosRequestConfig): Promise<T> =>
+  post: <T = any>(url: string, data?: any, config?: any): Promise<T> =>
     request.post(url, data, config),
 
-  put: <T = any>(url: string, data?: any, config?: InternalAxiosRequestConfig): Promise<T> =>
+  put: <T = any>(url: string, data?: any, config?: any): Promise<T> =>
     request.put(url, data, config),
 
-  delete: <T = any>(url: string, config?: InternalAxiosRequestConfig): Promise<T> =>
+  delete: <T = any>(url: string, config?: any): Promise<T> =>
     request.delete(url, config),
 
-  patch: <T = any>(url: string, data?: any, config?: InternalAxiosRequestConfig): Promise<T> =>
+  patch: <T = any>(url: string, data?: any, config?: any): Promise<T> =>
     request.patch(url, data, config)
 }
 
@@ -159,11 +165,11 @@ export * from './code-diff'
 export * from './pipelines'
 export * from './chat'
 
-// 现有的API模块（避免命名冲突，暂时注释）
-// export * from './requirements'
-// export * from './prompts'
-// export * from './tasks'
-// export * from './test-cases'
-// export * from './knowledge'
-// export * from './dashboard'
-// export * from './git'
+// 现有的API模块
+export * from './requirements'
+export * from './prompts'
+export * from './tasks'
+export * from './test-cases'
+export * from './knowledge'
+export * from './dashboard'
+export * from './git'

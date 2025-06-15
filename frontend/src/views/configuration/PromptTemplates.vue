@@ -119,10 +119,9 @@
           <MarkdownEditor
             v-model="templateForm.content"
             height="300px"
-            @save="saveTemplate"
           />
           <div class="form-tip">
-            支持变量占位符：{{code_diff}}、{{requirement}}、{{context}}等
+            支持变量占位符：{{ '{' }}{{ '{' }}code_diff{{ '}' }}{{ '}' }}、{{ '{' }}{{ '{' }}requirement{{ '}' }}{{ '}' }}、{{ '{' }}{{ '{' }}context{{ '}' }}{{ '}' }}等
           </div>
         </el-form-item>
 
@@ -200,6 +199,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import { promptsApi } from '@/api/prompts'
 import MarkdownEditor from '@/components/common/MarkdownEditor.vue'
 import type { PromptTemplate } from '@/types'
 
@@ -211,6 +211,9 @@ const saving = ref(false)
 
 // 模板列表
 const templates = ref<PromptTemplate[]>([])
+
+// 分类筛选
+const selectedCategory = ref('all')
 
 // 对话框状态
 const dialogVisible = ref(false)
@@ -254,7 +257,7 @@ const templateRules: FormRules = {
 
 // 获取分类标签类型
 const getCategoryTagType = (category: string) => {
-  const typeMap: Record<string, string> = {
+  const typeMap: Record<string, 'primary' | 'success' | 'warning' | 'info' | 'danger'> = {
     requirement: 'primary',
     code_review: 'success',
     test_case: 'warning',
@@ -311,14 +314,28 @@ const saveTemplate = async () => {
     await templateFormRef.value.validate()
     saving.value = true
     
-    // TODO: 调用API保存模板
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const requestData = {
+      name: templateForm.name,
+      identifier: templateForm.identifier,
+      content: templateForm.content,
+      description: templateForm.description,
+      category: templateForm.category,
+      tags: templateForm.tags,
+      is_public: templateForm.isPublic
+    }
+    
+    if (isEdit.value) {
+      await promptsApi.updatePrompt(templateForm.id, requestData)
+    } else {
+      await promptsApi.createPrompt(requestData)
+    }
     
     ElMessage.success(isEdit.value ? '模板更新成功' : '模板创建成功')
     dialogVisible.value = false
     loadTemplates()
   } catch (error) {
     console.error('Save template failed:', error)
+    ElMessage.error(isEdit.value ? '模板更新失败' : '模板创建失败')
   } finally {
     saving.value = false
   }
@@ -337,21 +354,45 @@ const deleteTemplate = async (template: PromptTemplate) => {
       }
     )
     
-    // TODO: 调用API删除模板
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await promptsApi.deletePrompt(template.id)
     
     ElMessage.success('模板删除成功')
     loadTemplates()
-  } catch {
-    // 用户取消
+  } catch (error: any) {
+    if (error?.name !== 'cancel') {
+      console.error('Delete template failed:', error)
+      ElMessage.error('模板删除失败')
+    }
   }
 }
 
 // 加载模板列表
 const loadTemplates = async () => {
   try {
-    // TODO: 调用API加载模板列表
-    // 模拟数据
+    const result = await promptsApi.getPrompts({
+      category: selectedCategory.value === 'all' ? undefined : selectedCategory.value as any
+    })
+    
+    // 转换数据格式以匹配前端类型
+    templates.value = (result || []).map((template: any) => ({
+      id: template.id,
+      name: template.name,
+      identifier: template.identifier,
+      content: template.content,
+      description: template.description,
+      category: template.category,
+      tags: template.tags || [],
+      variables: template.variables || [],
+      isPublic: template.is_public,
+      usageCount: template.usage_count,
+      createdAt: template.created_at,
+      updatedAt: template.updated_at
+    }))
+  } catch (error) {
+    console.error('Load templates failed:', error)
+    ElMessage.error('加载模板列表失败')
+    
+    // 保留一些模拟数据作为备用
     templates.value = [
       {
         id: '1',
@@ -435,8 +476,6 @@ const loadTemplates = async () => {
         updatedAt: '2024-01-08 09:15:00'
       }
     ]
-  } catch (error) {
-    console.error('Load templates failed:', error)
   }
 }
 

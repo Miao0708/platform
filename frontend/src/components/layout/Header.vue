@@ -42,15 +42,12 @@
         <el-icon><QuestionFilled /></el-icon>
       </el-button>
 
-      <!-- 通知 -->
-      <el-badge :value="notificationCount" class="notification-badge">
-        <el-button type="text" :icon="Bell" />
-      </el-badge>
+
       
       <!-- 用户菜单 -->
       <el-dropdown @command="handleUserMenuCommand">
         <div class="user-info">
-          <el-avatar :size="32" :src="userInfo?.avatar">
+          <el-avatar :size="32">
             {{ userInfo?.username?.charAt(0).toUpperCase() }}
           </el-avatar>
           <span class="username">{{ userInfo?.username }}</span>
@@ -90,7 +87,6 @@ import {
   Expand,
   Fold,
   Search,
-  Bell,
   ArrowDown,
   User,
   Setting,
@@ -112,9 +108,6 @@ const { userInfo } = storeToRefs(userStore)
 
 // 搜索关键词
 const searchKeyword = ref('')
-
-// 通知数量（模拟）
-const notificationCount = ref(3)
 
 // 快捷键帮助对话框
 const shortcutHelpVisible = ref(false)
@@ -229,10 +222,6 @@ const handleUserMenuCommand = async (command: string) => {
 
     .search-input {
       width: 240px;
-    }
-
-    .notification-badge {
-      cursor: pointer;
     }
     
     .user-info {

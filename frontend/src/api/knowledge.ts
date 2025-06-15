@@ -68,11 +68,11 @@ export const knowledgeApi = {
   // === 知识库管理 ===
   // 获取知识库列表
   getKnowledgeBases: (params?: KnowledgeListParams) => 
-    api.get('/knowledge-bases', { params }),
+    api.get('/knowledge-bases/', { params }),
 
   // 创建知识库
   createKnowledgeBase: (data: CreateKnowledgeBaseRequest): Promise<KnowledgeBase> => 
-    api.post('/knowledge-bases', data),
+    api.post('/knowledge-bases/', data),
 
   // 获取知识库详情
   getKnowledgeBase: (id: string): Promise<KnowledgeBase> => 

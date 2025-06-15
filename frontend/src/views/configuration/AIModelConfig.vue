@@ -157,6 +157,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import { aiModelsApi } from '@/api/ai-models'
 import type { AIModelConfig } from '@/types'
 
 // 表单引用
@@ -326,14 +327,30 @@ const saveModel = async () => {
     await modelFormRef.value.validate()
     saving.value = true
     
-    // TODO: 调用API保存模型配置
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const requestData = {
+      name: modelForm.name,
+      provider: modelForm.provider,
+      base_url: modelForm.baseUrl,
+      api_key: modelForm.apiKey,
+      model: modelForm.model,
+      max_tokens: modelForm.maxTokens,
+      temperature: modelForm.temperature,
+      is_default: modelForm.isDefault,
+      is_active: modelForm.isActive
+    }
+    
+    if (isEdit.value) {
+      await aiModelsApi.updateAIModel(parseInt(modelForm.id), requestData)
+    } else {
+      await aiModelsApi.createAIModel(requestData)
+    }
     
     ElMessage.success(isEdit.value ? '模型配置更新成功' : '模型配置添加成功')
     dialogVisible.value = false
     loadModelConfigs()
   } catch (error) {
     console.error('Save model config failed:', error)
+    ElMessage.error(isEdit.value ? '模型配置更新失败' : '模型配置添加失败')
   } finally {
     saving.value = false
   }
@@ -344,10 +361,13 @@ const testConnection = async (model: AIModelConfig & { testing?: boolean }) => {
   try {
     model.testing = true
     
-    // TODO: 调用API测试连接
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    const result = await aiModelsApi.testConnection(parseInt(model.id))
     
-    ElMessage.success('连接测试成功')
+    if (result.success) {
+      ElMessage.success('连接测试成功')
+    } else {
+      ElMessage.error(`连接测试失败: ${result.message}`)
+    }
   } catch (error) {
     console.error('Test connection failed:', error)
     ElMessage.error('连接测试失败')
@@ -359,8 +379,7 @@ const testConnection = async (model: AIModelConfig & { testing?: boolean }) => {
 // 设置默认模型
 const setDefaultModel = async (model: AIModelConfig) => {
   try {
-    // TODO: 调用API设置默认模型
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await aiModelsApi.setDefaultModel(parseInt(model.id))
     
     // 取消其他模型的默认状态
     modelConfigs.value.forEach(config => {
@@ -373,14 +392,16 @@ const setDefaultModel = async (model: AIModelConfig) => {
   } catch (error) {
     console.error('Set default model failed:', error)
     model.isDefault = false
+    ElMessage.error('设置默认模型失败')
   }
 }
 
 // 切换模型状态
 const toggleModelStatus = async (model: AIModelConfig) => {
   try {
-    // TODO: 调用API切换状态
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await aiModelsApi.updateAIModel(parseInt(model.id), {
+      is_active: model.isActive
+    })
     
     // 如果禁用了默认模型，需要取消默认状态
     if (!model.isActive && model.isDefault) {
@@ -391,6 +412,7 @@ const toggleModelStatus = async (model: AIModelConfig) => {
   } catch (error) {
     console.error('Toggle model status failed:', error)
     model.isActive = !model.isActive
+    ElMessage.error('状态切换失败')
   }
 }
 
@@ -407,13 +429,15 @@ const deleteModel = async (model: AIModelConfig) => {
       }
     )
     
-    // TODO: 调用API删除模型
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await aiModelsApi.deleteAIModel(parseInt(model.id))
     
     ElMessage.success('模型配置删除成功')
     loadModelConfigs()
-  } catch {
-    // 用户取消
+  } catch (error: any) {
+    if (error?.name !== 'cancel') {
+      console.error('Delete model failed:', error)
+      ElMessage.error('模型配置删除失败')
+    }
   }
 }
 
@@ -422,40 +446,23 @@ const loadModelConfigs = async () => {
   try {
     loading.value = true
     
-    // TODO: 调用API加载模型配置列表
-    // 模拟数据
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const result = await aiModelsApi.getAIModels()
     
-    modelConfigs.value = [
-      {
-        id: '1',
-        name: 'OpenAI GPT-4o',
-        provider: 'openai',
-        baseUrl: 'https://api.openai.com/v1',
-        apiKey: 'sk-***',
-        model: 'gpt-4o',
-        maxTokens: 4096,
-        temperature: 0.7,
-        isDefault: true,
-        isActive: true,
-        createdAt: '2024-01-15 10:30:00',
-        updatedAt: '2024-01-15 10:30:00'
-      },
-      {
-        id: '2',
-        name: 'DeepSeek Chat',
-        provider: 'deepseek',
-        baseUrl: 'https://api.deepseek.com/v1',
-        apiKey: 'sk-***',
-        model: 'deepseek-chat',
-        maxTokens: 4096,
-        temperature: 0.7,
-        isDefault: false,
-        isActive: true,
-        createdAt: '2024-01-15 10:30:00',
-        updatedAt: '2024-01-15 10:30:00'
-      }
-    ]
+    // 转换数据格式以匹配前端类型
+    modelConfigs.value = (result || []).map((model: any) => ({
+      id: model.id?.toString() || '',
+      name: model.name,
+      provider: model.provider,
+      baseUrl: model.base_url,
+      apiKey: '***', // 不显示真实API密钥
+      model: model.model,
+      maxTokens: model.max_tokens,
+      temperature: model.temperature,
+      isDefault: model.is_default,
+      isActive: model.is_active,
+      createdAt: model.created_at,
+      updatedAt: model.updated_at
+    }))
   } catch (error) {
     console.error('Load model configs failed:', error)
     ElMessage.error('加载模型配置失败')
