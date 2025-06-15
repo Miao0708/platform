@@ -85,7 +85,7 @@ request.interceptors.response.use(
       
       // 成功响应
       if (code === 200) {
-        return data
+        return data !== null ? data : responseData  // 如果data为null，返回整个response
       }
 
       // 业务错误
@@ -107,6 +107,7 @@ request.interceptors.response.use(
         case 401:
           ElMessage.error('登录已过期，请重新登录')
           localStorage.removeItem('token')
+          localStorage.removeItem('userInfo')
           // 跳转到登录页 - 使用路由跳转而不是直接修改location
           if (typeof window !== 'undefined') {
             window.location.href = '/login'
@@ -118,14 +119,20 @@ request.interceptors.response.use(
         case 404:
           ElMessage.error('请求的资源不存在')
           break
+        case 422:
+          // 处理验证错误
+          const errorMessage = data?.detail || '请求参数验证失败'
+          ElMessage.error(errorMessage)
+          break
         case 500:
           ElMessage.error('服务器内部错误')
           break
         default:
-          ElMessage.error(data?.message || '网络错误')
+          const message = data?.message || data?.detail || '网络错误'
+          ElMessage.error(message)
       }
     } else if (error.request) {
-      ElMessage.error('网络连接失败，请检查网络')
+      ElMessage.error('网络连接失败，请检查网络连接')
     } else {
       ElMessage.error('请求配置错误')
     }

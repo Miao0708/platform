@@ -5,8 +5,8 @@ export interface GitCredential {
   id: string
   username: string
   token: string
-  is_active: boolean
-  created_at: string
+  isActive: boolean
+  createdAt: string
 }
 
 // Git仓库接口
@@ -14,9 +14,9 @@ export interface GitRepository {
   id: string
   alias: string
   url: string
-  default_base_branch: string
-  is_active: boolean
-  created_at: string
+  defaultBaseBranch: string
+  isActive: boolean
+  createdAt: string
 }
 
 // 创建Git凭证请求
@@ -29,12 +29,12 @@ export interface CreateGitCredentialRequest {
 export interface CreateGitRepositoryRequest {
   alias: string
   url: string
-  default_base_branch?: string
+  defaultBaseBranch?: string
 }
 
 // 测试Git连接请求
 export interface TestGitConnectionRequest {
-  test_url?: string
+  testUrl?: string
 }
 
 // Git配置API
@@ -136,7 +136,7 @@ export const gitUtils = {
 
   // 格式化凭证显示
   formatCredential: (credential: GitCredential): string => {
-    return `${credential.username} (${credential.is_active ? '已激活' : '未激活'})`
+    return `${credential.username} (${credential.isActive ? '已激活' : '未激活'})`
   },
 
   // 验证Git凭证
@@ -172,7 +172,7 @@ export const gitUtils = {
       errors.push('仓库URL格式不正确')
     }
     
-    if (data.default_base_branch && !gitUtils.isValidBranchName(data.default_base_branch)) {
+    if (data.defaultBaseBranch && !gitUtils.isValidBranchName(data.defaultBaseBranch)) {
       errors.push('默认分支名称格式不正确')
     }
     
@@ -186,7 +186,7 @@ export const gitUtils = {
     
     return {
       alias: repoName || '新仓库',
-      default_base_branch: 'main',
+      defaultBaseBranch: 'main',
       provider: provider,
       suggestions: [
         '建议使用有意义的别名',
