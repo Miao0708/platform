@@ -1,3 +1,15 @@
 .idea
 .vscode
 .vs
+frontend/node_modules/
+backend/venv/
+_pycache_
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+*.pywz
+*.pyzw
+*.pyzwz
+*.pyzwzw

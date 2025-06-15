@@ -2,9 +2,19 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 
 import { ElMessage } from 'element-plus'
 import type { ApiResponse } from '@/types'
 
+// 根据环境设置 API 基础路径
+const getBaseURL = () => {
+  // 开发环境使用代理，生产环境使用环境变量或默认值
+  if (import.meta.env.DEV) {
+    return '/api/v1' // 开发环境通过 Vite 代理
+  } else {
+    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+  }
+}
+
 // 创建 axios 实例
 const request: AxiosInstance = axios.create({
-  baseURL: 'http://localhost:8000/api/v1', // 直接设置API基础路径
+  baseURL: getBaseURL(),
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json'

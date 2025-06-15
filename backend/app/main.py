@@ -20,13 +20,27 @@ def create_application() -> FastAPI:
     )
     
     # 添加CORS中间件
+    # 根据环境配置允许的域名
+    allowed_origins = settings.allowed_origins_list if not settings.DEBUG else ["*"]
+    
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # 生产环境应该限制具体域名
+        allow_origins=allowed_origins,
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
         allow_headers=["*"],
     )
+    
+    # 添加请求日志中间件（开发环境）
+    if settings.DEBUG:
+        @app.middleware("http")
+        async def log_requests(request, call_next):
+            import time
+            start_time = time.time()
+            response = await call_next(request)
+            process_time = time.time() - start_time
+            print(f"[{request.client.host}] {request.method} {request.url} - {response.status_code} ({process_time:.3f}s)")
+            return response
     
     # 创建数据库表
     create_db_and_tables()
@@ -47,7 +61,8 @@ async def root():
     return {
         "message": "AI研发辅助平台后端API",
         "version": settings.VERSION,
-        "docs_url": f"{settings.API_V1_STR}/docs"
+        "docs_url": f"{settings.API_V1_STR}/docs",
+        "debug": settings.DEBUG
     }
 
 

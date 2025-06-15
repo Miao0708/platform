@@ -47,7 +47,7 @@ E:/web/
 - **语言**: Python 3.8+
 - **数据库**: SQLite + ChromaDB (向量数据库)
 - **ORM**: SQLModel
-- **认证**: JWT
+- **认证**: 简化Token认证
 - **任务队列**: Celery
 
 ## 快速开始

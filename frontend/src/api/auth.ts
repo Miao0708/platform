@@ -91,28 +91,34 @@ export const authUtils = {
     return !!token
   },
 
-  // 解析Token获取用户信息（简单解析，生产环境建议使用jwt库）
+  // 解析Token获取用户信息（简化Token格式：user_id:token:timestamp）
   parseToken: (token: string) => {
     try {
-      const payload = token.split('.')[1]
-      const decoded = atob(payload)
-      return JSON.parse(decoded)
+      const parts = token.split(':')
+      if (parts.length !== 3) return null
+      
+      const [userId, tokenPart, timestamp] = parts
+      return {
+        userId: userId,
+        timestamp: parseInt(timestamp),
+        exp: parseInt(timestamp) + (30 * 24 * 60 * 60) // 30天后过期
+      }
     } catch (error) {
       console.error('Token解析失败:', error)
       return null
     }
   },
 
-  // 检查Token是否即将过期（提前5分钟刷新）
+  // 检查Token是否即将过期（提前1天刷新）
   isTokenExpiringSoon: (token: string): boolean => {
     const payload = authUtils.parseToken(token)
     if (!payload || !payload.exp) return true
     
     const expirationTime = payload.exp * 1000 // 转换为毫秒
     const currentTime = Date.now()
-    const fiveMinutes = 5 * 60 * 1000 // 5分钟
+    const oneDay = 24 * 60 * 60 * 1000 // 1天
     
-    return (expirationTime - currentTime) < fiveMinutes
+    return (expirationTime - currentTime) < oneDay
   }
 }
 

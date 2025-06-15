@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     DEBUG: bool = False
     
+    # CORS配置
+    ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
+    
     # 数据库配置
     DATABASE_URL: str = "sqlite:///./ai_dev_platform.db"
     
@@ -53,6 +56,11 @@ class Settings(BaseSettings):
     # 日志配置
     LOG_LEVEL: str = "INFO"
     LOG_FILE: str = "./logs/app.log"
+    
+    @property
+    def allowed_origins_list(self) -> List[str]:
+        """将CORS允许的域名字符串转换为列表"""
+        return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
     
     @field_validator("SECRET_KEY")
     @classmethod
