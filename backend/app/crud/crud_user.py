@@ -7,7 +7,7 @@ from typing import Optional, List, Dict, Any
 from sqlmodel import Session, select, func
 from app.crud.base import CRUDBase
 from app.models.user import User, UserSession, UserLoginLog
-from app.schemas.user import UserRegister, UserUpdate, UserPreferencesUpdate
+from app.schemas.user import UserRegister, UserUpdate
 from app.core.security import get_password_hash, verify_password
 
 
@@ -19,17 +19,9 @@ class CRUDUser(CRUDBase[User, UserRegister, UserUpdate]):
         statement = select(User).where(User.username == username)
         return db.exec(statement).first()
     
-    def get_by_email(self, db: Session, *, email: str) -> Optional[User]:
-        """根据邮箱获取用户"""
-        statement = select(User).where(User.email == email)
-        return db.exec(statement).first()
-    
     def get_by_username_or_email(self, db: Session, *, identifier: str) -> Optional[User]:
-        """根据用户名或邮箱获取用户"""
-        statement = select(User).where(
-            (User.username == identifier) | (User.email == identifier)
-        )
-        return db.exec(statement).first()
+        """根据用户名获取用户（兼容旧接口）"""
+        return self.get_by_username(db, username=identifier)
     
     def create(self, db: Session, *, obj_in: UserRegister) -> User:
         """创建用户"""
@@ -37,11 +29,6 @@ class CRUDUser(CRUDBase[User, UserRegister, UserUpdate]):
         existing_user = self.get_by_username(db, username=obj_in.username)
         if existing_user:
             raise ValueError(f"用户名 '{obj_in.username}' 已存在")
-        
-        # 检查邮箱是否已存在
-        existing_email = self.get_by_email(db, email=obj_in.email)
-        if existing_email:
-            raise ValueError(f"邮箱 '{obj_in.email}' 已存在")
         
         # 创建用户
         user_data = obj_in.model_dump()
@@ -63,44 +50,11 @@ class CRUDUser(CRUDBase[User, UserRegister, UserUpdate]):
         return user
     
     def update_login_info(self, db: Session, *, user_id: int) -> User:
-        """更新用户登录信息"""
+        """更新用户登录信息（简化版，无实际操作）"""
         user = self.get(db, user_id)
-        if user:
-            user.login_count += 1
-            user.last_login_at = datetime.utcnow().isoformat()
-            db.add(user)
-            db.commit()
-            db.refresh(user)
         return user
     
-    def update_preferences(
-        self, 
-        db: Session, 
-        *, 
-        user_id: int, 
-        preferences: UserPreferencesUpdate
-    ) -> User:
-        """更新用户偏好设置"""
-        user = self.get(db, user_id)
-        if not user:
-            raise ValueError("用户不存在")
-        
-        # 合并偏好设置
-        current_prefs = user.preferences or {}
-        new_prefs = preferences.model_dump(exclude_unset=True)
-        
-        # 深度合并字典
-        for key, value in new_prefs.items():
-            if isinstance(value, dict) and key in current_prefs:
-                current_prefs[key].update(value)
-            else:
-                current_prefs[key] = value
-        
-        user.preferences = current_prefs
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-        return user
+
     
     def change_password(
         self, 
@@ -140,33 +94,15 @@ class CRUDUser(CRUDBase[User, UserRegister, UserUpdate]):
             select(func.count(User.id)).where(User.is_active == True)
         ).first()
         
-        # 已验证用户数
-        verified_users = db.exec(
-            select(func.count(User.id)).where(User.is_verified == True)
-        ).first()
-        
-        # 今日新增用户
-        today = datetime.utcnow().date()
-        new_users_today = db.exec(
-            select(func.count(User.id)).where(
-                func.date(User.created_at) == today
-            )
-        ).first()
-        
-        # 当前登录会话数
-        login_sessions = db.exec(
-            select(func.count(UserSession.id)).where(
-                UserSession.is_active == True,
-                UserSession.expires_at > datetime.utcnow().isoformat()
-            )
+        # 超级用户数
+        superusers = db.exec(
+            select(func.count(User.id)).where(User.is_superuser == True)
         ).first()
         
         return {
             "total_users": total_users or 0,
             "active_users": active_users or 0,
-            "verified_users": verified_users or 0,
-            "new_users_today": new_users_today or 0,
-            "login_sessions": login_sessions or 0
+            "superusers": superusers or 0
         }
 
 

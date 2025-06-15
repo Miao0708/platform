@@ -12,47 +12,19 @@ class User(BaseModel, table=True):
     __tablename__ = "users"
     
     username: str = Field(description="用户名", unique=True, index=True)
-    email: str = Field(description="邮箱", unique=True, index=True)
     hashed_password: str = Field(description="加密后的密码")
-    full_name: Optional[str] = Field(default=None, description="全名")
-    avatar_url: Optional[str] = Field(default=None, description="头像URL")
-    bio: Optional[str] = Field(sa_column=Column(Text), default=None, description="个人简介")
     
-    # 个人设置
-    preferences: Optional[dict] = Field(sa_column=Column(JSON), default=None, description="个人偏好设置")
-    
-    # 状态字段
+    # 权限字段
     is_active: bool = Field(default=True, description="是否激活")
     is_superuser: bool = Field(default=False, description="是否超级用户")
-    is_verified: bool = Field(default=False, description="是否已验证邮箱")
-    
-    # 统计字段
-    login_count: int = Field(default=0, description="登录次数")
-    last_login_at: Optional[str] = Field(default=None, description="最后登录时间")
     
     model_config = {
         "json_schema_extra": {
             "examples": [
                 {
-                    "username": "john_doe",
-                    "email": "john@example.com",
-                    "full_name": "John Doe",
-                    "bio": "AI研发工程师",
-                    "preferences": {
-                        "theme": "dark",
-                        "language": "zh-CN",
-                        "notifications": {
-                            "email": True,
-                            "push": False
-                        },
-                        "editor": {
-                            "font_size": 14,
-                            "tab_size": 4,
-                            "word_wrap": True
-                        }
-                    },
+                    "username": "admin",
                     "is_active": True,
-                    "is_verified": True
+                    "is_superuser": True
                 }
             ]
         }

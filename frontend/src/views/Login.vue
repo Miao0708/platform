@@ -64,9 +64,7 @@
             <template #default>
               <div style="font-size: 12px; line-height: 1.5;">
                 <p><strong>管理员:</strong> admin / admin123456</p>
-                <p><strong>开发者:</strong> developer / dev123</p>
-                <p><strong>测试员:</strong> tester / test123</p>
-                <p><strong>普通用户:</strong> user / user123</p>
+                <p><strong>普通用户:</strong> user / user123456</p>
               </div>
             </template>
           </el-alert>

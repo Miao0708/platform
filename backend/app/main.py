@@ -21,9 +21,7 @@ def init_admin_user():
                 # 创建admin用户
                 admin_data = UserRegister(
                     username="admin",
-                    email="admin@platform.com",
-                    password="admin123456",  # 生产环境应使用更强密码
-                    full_name="系统管理员"
+                    password="admin123456"  # 生产环境应使用更强密码
                 )
                 admin_user = user.create(db=db, obj_in=admin_data)
                 
@@ -36,7 +34,6 @@ def init_admin_user():
                 
                 print(f"✅ 管理员用户创建成功:")
                 print(f"   用户名: {admin_user.username}")
-                print(f"   邮箱: {admin_user.email}")
                 print(f"   密码: admin123456 (请及时修改)")
                 print(f"   超级用户: {admin_user.is_superuser}")
                 

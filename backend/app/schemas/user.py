@@ -10,18 +10,14 @@ from pydantic import BaseModel, Field, EmailStr
 class UserRegister(BaseModel):
     """用户注册请求模式"""
     username: str = Field(..., min_length=3, max_length=50, description="用户名")
-    email: EmailStr = Field(..., description="邮箱")
     password: str = Field(..., min_length=6, max_length=100, description="密码")
-    full_name: Optional[str] = Field(None, max_length=100, description="全名")
     
     model_config = {
         "json_schema_extra": {
             "examples": [
                 {
-                    "username": "john_doe",
-                    "email": "john@example.com",
-                    "password": "secure_password123",
-                    "full_name": "John Doe"
+                    "username": "admin",
+                    "password": "admin123456"
                 }
             ]
         }
@@ -33,7 +29,7 @@ class UserLogin(BaseModel):
     username: str = Field(..., description="用户名或邮箱")
     password: str = Field(..., description="密码")
     remember_me: bool = Field(False, description="记住我")
-    device_info: Optional[str] = Field(None, description="设备信息")
+    # device_info: Optional[str] = Field(None, description="设备信息")
     
     model_config = {
         "json_schema_extra": {
@@ -42,7 +38,7 @@ class UserLogin(BaseModel):
                     "username": "john_doe",
                     "password": "secure_password123",
                     "remember_me": True,
-                    "device_info": "Chrome 120.0 on Windows 10"
+                    # "device_info": "Chrome 120.0 on Windows 10"
                 }
             ]
         }
@@ -82,15 +78,8 @@ class UserResponse(BaseModel):
     """用户信息响应模式"""
     id: int
     username: str
-    email: str
-    full_name: Optional[str]
-    avatar_url: Optional[str]
-    bio: Optional[str]
-    preferences: Optional[Dict[str, Any]]
     is_active: bool
-    is_verified: bool
-    login_count: int
-    last_login_at: Optional[str]
+    is_superuser: bool
     created_at: datetime
     updated_at: Optional[datetime]
     
@@ -99,17 +88,15 @@ class UserResponse(BaseModel):
 
 class UserUpdate(BaseModel):
     """用户信息更新请求模式"""
-    full_name: Optional[str] = Field(None, max_length=100, description="全名")
-    bio: Optional[str] = Field(None, max_length=500, description="个人简介")
-    avatar_url: Optional[str] = Field(None, description="头像URL")
+    is_active: Optional[bool] = Field(None, description="是否激活")
+    is_superuser: Optional[bool] = Field(None, description="是否超级用户")
     
     model_config = {
         "json_schema_extra": {
             "examples": [
                 {
-                    "full_name": "John Smith",
-                    "bio": "高级AI研发工程师，专注于机器学习和自然语言处理",
-                    "avatar_url": "https://example.com/avatars/john.jpg"
+                    "is_active": True,
+                    "is_superuser": False
                 }
             ]
         }

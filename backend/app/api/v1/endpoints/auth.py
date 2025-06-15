@@ -151,9 +151,7 @@ def login(
             "user": {
                 "id": str(authenticated_user.id),
                 "username": authenticated_user.username,
-                "email": authenticated_user.email,
-                "nickname": authenticated_user.full_name,
-                "avatar": authenticated_user.avatar_url
+                "is_superuser": authenticated_user.is_superuser
             }
         },
         message="登录成功"

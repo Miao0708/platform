@@ -5,14 +5,7 @@ import { authApi, usersApi, authUtils, userUtils } from '@/api'
 export interface UserInfo {
   id: string
   username: string
-  email: string
-  avatar?: string
   roles: string[]
-  nickname?: string
-  phone?: string
-  department?: string
-  position?: string
-  lastLoginTime?: string
 }
 
 export const useUserStore = defineStore('user', () => {
@@ -42,27 +35,29 @@ export const useUserStore = defineStore('user', () => {
       isLoading.value = true
 
       // 调用真实的登录API
+      console.log('正在调用登录API...', { username })
       const response = await authApi.login({ username, password })
+      console.log('登录API响应:', response)
 
       // 保存Token
       authUtils.saveToken(response.access_token)
       setToken(response.access_token)
 
+      // 确定用户角色（通过用户名判断）
+      const userRole = username === 'admin' ? 'admin' : 'user'
+
       // 转换用户信息格式
       const userInfo: UserInfo = {
-        id: response.user.id,
+        id: response.user.id.toString(),
         username: response.user.username,
-        email: response.user.email,
-        nickname: response.user.nickname,
-        avatar: response.user.avatar,
-        roles: [response.user.role || 'user'], // 默认角色
-        department: '技术部', // 默认部门
-        position: response.user.role === 'admin' ? '系统管理员' : '开发工程师'
+        roles: [userRole] // 根据用户名确定角色
       }
 
+      console.log('用户信息:', userInfo)
       setUserInfo(userInfo)
       userUtils.saveUserInfo(userInfo)
 
+      console.log('登录状态:', isLoggedIn.value)
       return true
     } catch (error) {
       console.error('Login failed:', error)

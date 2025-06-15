@@ -15,9 +15,7 @@ from app.schemas.user import UserRegister
 
 
 def create_admin_user(username: str = "admin", 
-                     email: str = "admin@platform.com", 
-                     password: str = "admin123456",
-                     full_name: str = "系统管理员"):
+                     password: str = "admin123456"):
     """创建管理员用户"""
     
     with Session(engine) as db:
@@ -27,18 +25,11 @@ def create_admin_user(username: str = "admin",
             print(f"❌ 用户名 '{username}' 已存在")
             return False
         
-        existing_email = user.get_by_email(db, email=email)
-        if existing_email:
-            print(f"❌ 邮箱 '{email}' 已存在")
-            return False
-        
         try:
             # 创建用户
             admin_data = UserRegister(
                 username=username,
-                email=email,
-                password=password,
-                full_name=full_name
+                password=password
             )
             admin_user = user.create(db=db, obj_in=admin_data)
             
@@ -52,11 +43,8 @@ def create_admin_user(username: str = "admin",
             print(f"✅ 管理员用户创建成功:")
             print(f"   ID: {admin_user.id}")
             print(f"   用户名: {admin_user.username}")
-            print(f"   邮箱: {admin_user.email}")
-            print(f"   全名: {admin_user.full_name}")
             print(f"   密码: {password}")
             print(f"   超级用户: {admin_user.is_superuser}")
-            print(f"   已验证: {admin_user.is_verified}")
             print(f"   创建时间: {admin_user.created_at}")
             
             return True
@@ -75,21 +63,21 @@ def list_all_users():
             return
         
         print(f"📝 当前数据库中的用户 (共 {len(users)} 个):")
-        print("-" * 80)
+        print("-" * 60)
         for u in users:
-            print(f"ID: {u.id:3d} | 用户名: {u.username:15s} | 邮箱: {u.email:25s} | 超级用户: {u.is_superuser}")
+            print(f"ID: {u.id:3d} | 用户名: {u.username:15s} | 超级用户: {u.is_superuser}")
 
 
 def main():
     """主函数"""
     if len(sys.argv) < 2:
         print("使用方法:")
-        print("  python create_admin.py create [username] [email] [password] [full_name]")
+        print("  python create_admin.py create [username] [password]")
         print("  python create_admin.py list")
         print("")
         print("示例:")
         print("  python create_admin.py create")
-        print("  python create_admin.py create admin admin@test.com admin123 管理员")
+        print("  python create_admin.py create admin admin123456")
         print("  python create_admin.py list")
         return
     
@@ -98,12 +86,10 @@ def main():
     if command == "create":
         # 解析参数
         username = sys.argv[2] if len(sys.argv) > 2 else "admin"
-        email = sys.argv[3] if len(sys.argv) > 3 else "admin@platform.com"
-        password = sys.argv[4] if len(sys.argv) > 4 else "admin123456"
-        full_name = sys.argv[5] if len(sys.argv) > 5 else "系统管理员"
+        password = sys.argv[3] if len(sys.argv) > 3 else "admin123456"
         
         print(f"🚀 正在创建管理员用户...")
-        success = create_admin_user(username, email, password, full_name)
+        success = create_admin_user(username, password)
         
         if success:
             print(f"\n⚠️  请及时修改默认密码以确保安全!")
