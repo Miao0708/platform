@@ -2,6 +2,7 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 
 import { ElMessage } from 'element-plus'
 import type { ApiResponse } from '@/types'
 import { convertKeysToCamelCase, convertKeysToSnakeCase } from '@/utils/caseConverter'
+import { requestLogger } from '@/utils/request-logger'
 
 // 根据环境设置 API 基础路径
 const getBaseURL = () => {
@@ -25,6 +26,11 @@ const request: AxiosInstance = axios.create({
 // 请求拦截器
 request.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // 记录请求日志
+    const requestId = requestLogger.logRequest(config)
+    // 将requestId存储在config中，供响应拦截器使用
+    ;(config as any).metadata = { requestId }
+
     // 添加 token 到请求头
     const token = localStorage.getItem('token')
     if (token && config.headers) {
@@ -44,16 +50,6 @@ request.interceptors.request.use(
       config.params = convertKeysToSnakeCase(config.params)
     }
 
-    // 添加调试日志
-    console.log('API Request:', {
-      url: config.url,
-      method: config.method,
-      baseURL: config.baseURL,
-      headers: config.headers,
-      data: config.data,
-      params: config.params
-    })
-
     return config
   },
   (error) => {
@@ -65,19 +61,15 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response: AxiosResponse) => {
+    // 记录响应日志
+    const requestId = (response.config as any).metadata?.requestId
+    requestLogger.logResponse(response, requestId)
+
     // 数据格式转换：确保响应数据为camelCase格式
     let responseData = response.data
     if (responseData && typeof responseData === 'object') {
       responseData = convertKeysToCamelCase(responseData)
     }
-
-    // 添加调试日志
-    console.log('API Response:', {
-      url: response.config.url,
-      status: response.status,
-      originalData: response.data,
-      convertedData: responseData
-    })
 
     // 检查是否是标准化API响应格式
     if (responseData && typeof responseData === 'object' && 'code' in responseData) {
@@ -97,6 +89,10 @@ request.interceptors.response.use(
     return responseData
   },
   (error) => {
+    // 记录错误日志
+    const requestId = (error.config as any)?.metadata?.requestId
+    requestLogger.logError(error, requestId)
+    
     console.error('Response error:', error)
     
     // 处理不同的错误状态码

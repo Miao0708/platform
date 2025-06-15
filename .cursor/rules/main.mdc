@@ -44,7 +44,15 @@ alwaysApply: true
 - 使用 Pydantic 模型进行请求/响应验证
 - 实现适当的依赖注入和错误处理
 - 遵循 RESTful API 设计原则
-
+  
+## 项目启动
+### 后端
+conda activate platform
+cd ./backend
+uvicorn app.main:app --reload --port=8000
+### 前端
+cd  ./frontend
+npm run dev
 ---
 
 

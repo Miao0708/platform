@@ -1,5 +1,5 @@
 """
-FastAPI应用主入口
+FastAPI应用主入口 
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,6 +9,7 @@ from app.core.database import create_db_and_tables, engine
 from app.api.v1.api import api_router
 from app.crud.crud_user import user
 from app.schemas.user import UserRegister
+from app.core.logging import DetailedLoggingMiddleware, setup_logging, logger
 
 
 def init_admin_user():
@@ -27,7 +28,6 @@ def init_admin_user():
                 
                 # 设置为超级用户
                 admin_user.is_superuser = True
-                admin_user.is_verified = True
                 db.add(admin_user)
                 db.commit()
                 db.refresh(admin_user)
@@ -46,6 +46,9 @@ def init_admin_user():
 def create_application() -> FastAPI:
     """创建FastAPI应用实例"""
     
+    # 初始化日志系统
+    setup_logging(log_level=settings.LOG_LEVEL, log_file=settings.LOG_FILE)
+    
     app = FastAPI(
         title=settings.PROJECT_NAME,
         version=settings.VERSION,
@@ -53,6 +56,13 @@ def create_application() -> FastAPI:
         docs_url=f"{settings.API_V1_STR}/docs",
         redoc_url=f"{settings.API_V1_STR}/redoc",
     )
+    
+    # 添加详细日志中间件（根据DEBUG模式决定是否启用）
+    if settings.DEBUG:
+        app.add_middleware(
+            DetailedLoggingMiddleware,
+            enable_detailed_logging=True
+        )
     
     # 添加CORS中间件
     # 根据环境配置允许的域名
@@ -65,17 +75,6 @@ def create_application() -> FastAPI:
         allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
         allow_headers=["*"],
     )
-    
-    # 添加请求日志中间件（开发环境）
-    if settings.DEBUG:
-        @app.middleware("http")
-        async def log_requests(request, call_next):
-            import time
-            start_time = time.time()
-            response = await call_next(request)
-            process_time = time.time() - start_time
-            print(f"[{request.client.host}] {request.method} {request.url} - {response.status_code} ({process_time:.3f}s)")
-            return response
     
     # 创建数据库表
     create_db_and_tables()

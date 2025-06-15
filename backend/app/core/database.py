@@ -1,10 +1,16 @@
 """
 数据库连接和会话管理
 """
+import time
 from sqlmodel import SQLModel, create_engine, Session
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import event
 from app.core.config import settings
+from app.core.logging import db_logger
+
+# 导入所有模型以确保它们被注册到SQLModel.metadata中
+from app.models import *
 
 
 # 同步数据库引擎
@@ -13,6 +19,21 @@ engine = create_engine(
     echo=settings.DEBUG,
     connect_args={"check_same_thread": False}  # SQLite特定配置
 )
+
+# 添加SQL执行时间记录
+if settings.DEBUG:
+    @event.listens_for(engine, "before_cursor_execute")
+    def receive_before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+        context._query_start_time = time.time()
+
+    @event.listens_for(engine, "after_cursor_execute")
+    def receive_after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+        total = time.time() - context._query_start_time
+        db_logger.log_sql_query(
+            query=statement,
+            params=parameters,
+            execution_time=total
+        )
 
 # 异步数据库引擎
 async_engine = create_async_engine(
