@@ -1,5 +1,5 @@
 ---
-description: FastAPI 接口开发规范
+description: 接口开发规范
 globs: 
 alwaysApply: false
 ---

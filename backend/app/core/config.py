@@ -23,8 +23,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./ai_dev_platform.db"
     
     # 安全配置
-    SECRET_KEY: str
-    ENCRYPTION_KEY: str
+    SECRET_KEY: str = "fk58zcliQ9khxcRSr8HKIDsfuTGoqQF4OYppaFjrDBQ"
+    ENCRYPTION_KEY: str = "UX_x376sIVBDRaLvmILjNw-cslwRSI1lC7W9eHtNRMI="
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     ALGORITHM: str = "HS256"
     
@@ -83,7 +83,6 @@ class Settings(BaseSettings):
         return v
     
     model_config = {
-        "env_file": ".env",
         "case_sensitive": True
     }
 
