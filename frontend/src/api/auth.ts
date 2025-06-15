@@ -10,12 +10,12 @@ export interface LoginRequest {
 
 // 登录响应数据
 export interface LoginResponse {
-  access_token: string
-  token_type: string
+  accessToken: string
+  tokenType: string
   user: {
     id: number
     username: string
-    is_superuser: boolean
+    isSuperuser: boolean
   }
 }
 
@@ -33,11 +33,7 @@ export const authApi = {
 
   // 用户注册
   register: (data: RegisterRequest) =>
-    api.post('/auth/register', data),
-
-  // 刷新Token
-  refreshToken: () =>
-    api.post('/auth/refresh')
+    api.post('/auth/register', data)
 }
 
 // 认证工具函数

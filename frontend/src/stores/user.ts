@@ -5,7 +5,7 @@ import { authApi, authUtils } from '@/api'
 export interface UserInfo {
   id: number
   username: string
-  is_superuser: boolean
+  isSuperuser: boolean
 }
 
 export const useUserStore = defineStore('user', () => {
@@ -16,7 +16,7 @@ export const useUserStore = defineStore('user', () => {
 
   // 计算属性
   const isLoggedIn = computed(() => !!token.value && !!userInfo.value)
-  const isAdmin = computed(() => userInfo.value?.is_superuser || false)
+  const isAdmin = computed(() => userInfo.value?.isSuperuser || false)
 
   // 方法
   const setToken = (newToken: string) => {
@@ -38,7 +38,7 @@ export const useUserStore = defineStore('user', () => {
       console.log('登录API响应:', response)
 
       // 保存Token和用户信息
-      setToken(response.access_token)
+      setToken(response.accessToken)
       setUserInfo(response.user)
 
       return true

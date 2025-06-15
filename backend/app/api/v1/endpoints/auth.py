@@ -49,7 +49,7 @@ def get_current_user(
     return current_user
 
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register")
 def register(
     *,
     db: Session = Depends(get_db),
@@ -58,7 +58,15 @@ def register(
     """用户注册"""
     try:
         new_user = user.create(db=db, obj_in=user_in)
-        return new_user
+        return {
+            "code": 200,
+            "message": "注册成功",
+            "data": {
+                "id": new_user.id,
+                "username": new_user.username,
+                "is_superuser": new_user.is_superuser
+            }
+        }
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -94,25 +102,41 @@ def login(
     access_token = create_access_token(subject=str(authenticated_user.id))
 
     return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": {
-            "id": authenticated_user.id,
-            "username": authenticated_user.username,
-            "is_superuser": authenticated_user.is_superuser
+        "code": 200,
+        "message": "登录成功",
+        "data": {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": authenticated_user.id,
+                "username": authenticated_user.username,
+                "is_superuser": authenticated_user.is_superuser
+            }
         }
     }
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me")
 def get_current_user_info(
     current_user: UserResponse = Depends(get_current_user)
 ):
     """获取当前用户信息"""
-    return current_user
+    return {
+        "code": 200,
+        "message": "获取用户信息成功",
+        "data": {
+            "id": current_user.id,
+            "username": current_user.username,
+            "is_superuser": current_user.is_superuser
+        }
+    }
 
 
-@router.post("/logout", response_model=MessageResponse)
+@router.post("/logout")
 def logout():
     """用户登出"""
-    return MessageResponse(message="登出成功")
+    return {
+        "code": 200,
+        "message": "登出成功",
+        "data": None
+    }
