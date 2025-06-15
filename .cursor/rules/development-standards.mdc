@@ -1,0 +1,250 @@
+---
+description: Development Standards & Best Practices
+globs: 
+alwaysApply: false
+---
+# Development Standards & Best Practices
+
+## Overview
+This document outlines development standards and best practices for modern web application development using Vue 3, TypeScript, FastAPI, and Element Plus.
+
+## Frontend Development Standards
+
+### Vue 3 Best Practices
+
+#### Component Naming & Organization
+- **File Naming**: Use PascalCase for component files (e.g., `UserProfile.vue`, `NavigationBar.vue`)
+- **Directory Naming**: Use kebab-case for directories (e.g., `user-profile/`, `navigation-bar/`)
+- **Component Registration**: Use PascalCase in script, kebab-case in templates
+- **Base Components**: Prefix with `Base` (e.g., `BaseButton.vue`, `BaseInput.vue`)
+- **Tightly Coupled Components**: Parent-child components share naming prefix
+
+#### Composition API Patterns
+```typescript
+// Recommended structure
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+
+// Props definition
+interface Props {
+  title: string
+  count?: number
+}
+
+const props = defineProps<Props>()
+
+// Emits definition
+interface Emits {
+  update: [value: string]
+  close: []
+}
+
+const emit = defineEmits<Emits>()
+
+// Reactive state
+const isLoading = ref(false)
+const items = ref<Item[]>([])
+
+// Computed properties
+const totalCount = computed(() => items.value.length)
+
+// Methods
+const handleUpdate = (value: string) => {
+  emit('update', value)
+}
+
+// Lifecycle
+onMounted(() => {
+  // Initialization logic
+})
+</script>
+```
+
+#### Template Structure
+- Use multi-line format for elements with multiple attributes
+- Keep expressions simple in templates
+- Use descriptive event handler names
+- Maintain consistent indentation (2 spaces)
+
+```vue
+<template>
+  <div class="component-wrapper">
+    <el-button
+      type="primary"
+      size="large" 
+      :loading="isLoading"
+      @click="handleSubmit"
+    >
+      {{ buttonText }}
+    </el-button>
+  </div>
+</template>
+```
+
+### TypeScript Standards
+
+#### Type Definition
+- Use interfaces for object shapes
+- Use types for unions, primitives, and computed types
+- Prefer explicit return types for functions
+- Use generic types for reusable components
+
+```typescript
+// Interface for object shapes
+interface UserProfile {
+  id: string
+  name: string
+  email: string
+  role: UserRole
+}
+
+// Type for unions
+type UserRole = 'admin' | 'user' | 'guest'
+
+// Generic type for API responses
+interface ApiResponse<T> {
+  data: T
+  message: string
+  success: boolean
+}
+
+// Function with explicit return type
+const fetchUser = async (id: string): Promise<UserProfile> => {
+  // Implementation
+}
+```
+
+#### Module Export/Import
+- Use named exports for utilities and components
+- Use default exports sparingly, prefer named exports
+- Group imports by type (third-party, internal, relative)
+
+```typescript
+// Preferred named exports
+export const validateEmail = (email: string): boolean => {
+  // Implementation
+}
+
+export const formatDate = (date: Date): string => {
+  // Implementation
+}
+
+// Import grouping
+import { ref, computed } from 'vue'
+import { ElMessage } from 'element-plus'
+
+import { apiClient } from '@/api'
+import { useUserStore } from '@/stores'
+
+import './Component.scss'
+```
+
+### Element Plus Integration
+
+#### Component Usage
+- Use double-closed tags for all Element Plus components
+- Configure props explicitly rather than using defaults
+- Use theme customization via CSS variables
+- Leverage auto-import for better DX
+
+```vue
+<template>
+  <el-form
+    ref="formRef"
+    :model="formData"
+    :rules="formRules"
+    label-width="120px"
+  >
+    <el-form-item label="Username" prop="username">
+      <el-input
+        v-model="formData.username"
+        placeholder="Enter username"
+        clearable
+      ></el-input>
+    </el-form-item>
+  </el-form>
+</template>
+```
+
+#### Theme Customization
+```scss
+// Override Element Plus variables
+:root {
+  --el-color-primary: #409eff;
+  --el-color-success: #67c23a;
+  --el-color-warning: #e6a23c;
+  --el-color-danger: #f56c6c;
+  --el-color-info: #909399;
+}
+```
+
+## Backend Development Standards
+
+### FastAPI Overview
+后端基于 FastAPI + SQLModel + SQLite 架构。
+
+**详细规范请参考**: `.cursor/rules/fastapi-api-standards.mdc`
+
+#### 核心原则
+- 使用 Pydantic 模型进行数据验证
+- 实现依赖注入和错误处理
+- 使用类型提示和标准 HTTP 状态码
+- 遵循 RESTful API 设计原则
+
+## General Development Standards
+
+### Code Quality
+- **Linting**: Use ESLint for JavaScript/TypeScript, Black for Python
+- **Formatting**: Use Prettier for frontend, autopep8 for backend
+- **Type Safety**: Maintain strict TypeScript configuration
+- **Testing**: Write unit tests for business logic, integration tests for APIs
+
+### Version Control
+- Use conventional commit messages
+- Create feature branches for development
+- Require code reviews for main branch
+- Use semantic versioning for releases
+
+### Performance
+- Implement lazy loading for routes and components
+- Use computed properties for derived state
+- Implement proper caching strategies
+- Monitor bundle sizes and optimize imports
+
+### Security
+- Validate all inputs on both client and server
+- Use HTTPS in production
+- Implement proper CORS configuration
+- Use secure authentication methods
+
+## Development Workflow
+
+### 快速开始
+```bash
+# 前端开发
+npm install && npm run dev
+
+# 后端开发  
+pip install -r requirements.txt && fastapi dev main.py
+
+# 生产构建
+npm run build        # 前端构建
+uvicorn main:app --host 0.0.0.0 --port 8000  # 后端部署
+```
+
+## Documentation Standards
+
+- Document public APIs with OpenAPI/Swagger
+- Use JSDoc for TypeScript functions
+- Maintain README files for setup instructions
+- Document environment variables and configuration
+- Keep changelog updated for releases
+
+## 错误处理标准
+
+- **前端**: 统一错误消息，全局错误处理，用户友好提示
+- **后端**: 标准 HTTP 状态码，详细错误响应，完善日志记录
+
+---
+
+*本文档应随着新模式和最佳实践的出现而定期更新。* 

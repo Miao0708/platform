@@ -2,14 +2,14 @@
 
 ## 📋 项目概述
 
-基于 FastAPI + SQLModel + PostgreSQL 的 AI 研发辅助平台后端服务，提供高性能的异步 API 和丰富的 AI 集成功能。
+基于 FastAPI + SQLModel + SQLite 的 AI 研发辅助平台后端服务，提供高性能的异步 API 和丰富的 AI 集成功能。
 
 ## 🛠️ 技术栈
 
 - **Web框架**: FastAPI 0.104.1
 - **ASGI服务器**: Uvicorn 0.24.0
 - **ORM**: SQLModel 0.0.14 (基于 SQLAlchemy + Pydantic)
-- **数据库**: PostgreSQL (通过 asyncpg)
+- **数据库**: SQLite (默认) / PostgreSQL (可选，生产环境)
 - **数据库迁移**: Alembic 1.12.1
 - **缓存**: Redis 5.0.1
 - **任务队列**: Celery 5.3.4
@@ -51,8 +51,8 @@ backend/
 
 ### 环境要求
 - Python >= 3.9
-- PostgreSQL >= 13 (可选，默认使用 SQLite)
 - Redis >= 6.0 (可选)
+- SQLite (默认数据库)
 
 ### 1. 安装依赖
 ```bash
@@ -70,7 +70,7 @@ DEBUG=True
 SECRET_KEY=your-secret-key-here
 
 # 数据库配置 (可选，默认使用 SQLite)
-# DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/ai_platform
+# DATABASE_URL=sqlite:///./ai_dev_platform.db
 
 # Redis配置 (可选)
 # REDIS_URL=redis://localhost:6379/0
@@ -648,32 +648,17 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/ai_platform
+      - DATABASE_URL=sqlite:///./data/ai_dev_platform.db
       - REDIS_URL=redis://redis:6379/0
     depends_on:
-      - db
       - redis
     volumes:
       - ./uploads:/app/uploads
-
-  db:
-    image: postgres:15
-    environment:
-      - POSTGRES_DB=ai_platform
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
-
-volumes:
-  postgres_data:
 ```
 
 ## 📚 最佳实践

@@ -1,0 +1,45 @@
+# AI 研发辅助平台 - Cursor Rules
+
+## 📋 规则文档结构
+
+- **主要规则**: `.cursor/rules/dev.mdc` - AI 助手核心指导原则
+- **前端开发标准**: `.cursor/rules/development-standards.mdc` - Vue 3 + TypeScript + Element Plus
+- **后端接口规范**: `.cursor/rules/fastapi-api-standards.mdc` - FastAPI 接口开发详细规范
+
+## 🎯 核心开发原则
+
+### 技术栈
+- **前端**: Vue 3 + TypeScript + Element Plus + Vite
+- **后端**: FastAPI + SQLModel + SQLite + Redis
+
+### 代码质量
+- 严格的 TypeScript 配置，避免使用 `any`
+- 前端使用 Prettier，后端使用 Black 格式化
+- 实现完善的错误处理和类型安全
+- 遵循既定的命名约定和架构模式
+
+### AI 助手指导
+当你提供代码建议时，请：
+1. **遵循既定模式** - 保持与现有代码库的一致性
+2. **类型安全优先** - 使用 TypeScript 接口定义所有数据结构  
+3. **完整可运行** - 提供包含所有必要导入和依赖的完整代码
+4. **现代语法** - 使用 ES6+ 和 Vue 3 Composition API
+5. **详细规范参考** - 根据具体需求参考对应的详细规范文件
+
+## 🔗 快速参考
+
+### 前端开发
+- 组件文件用 PascalCase，目录用 kebab-case
+- 始终使用 Composition API 与 `<script setup lang="ts">`
+- Element Plus 组件使用双闭合标签
+- 导入分组: Vue → 第三方 → 内部 → 相对路径
+
+### 后端开发  
+- 详细规范: `.cursor/rules/fastapi-api-standards.mdc`
+- 使用 Pydantic 模型进行请求/响应验证
+- 实现适当的依赖注入和错误处理
+- 遵循 RESTful API 设计原则
+
+---
+
+*这些规则旨在维护代码质量、一致性和团队生产力。请根据具体上下文和任务要求遵循相应的标准。* 

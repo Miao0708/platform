@@ -1,0 +1,525 @@
+---
+description: FastAPI 接口开发规范
+globs: 
+alwaysApply: false
+---
+# FastAPI 接口开发规范
+
+## API 设计原则
+
+### RESTful 设计
+- 使用标准 HTTP 方法 (GET, POST, PUT, DELETE, PATCH)
+- 资源导向的 URL 设计
+- 使用复数形式的资源名称
+- 遵循语义化的状态码
+
+### URL 设计规范
+```
+GET    /api/v1/users          # 获取用户列表
+GET    /api/v1/users/{id}     # 获取单个用户
+POST   /api/v1/users          # 创建用户
+PUT    /api/v1/users/{id}     # 更新用户
+DELETE /api/v1/users/{id}     # 删除用户
+```
+
+## 数据模型设计
+
+### Pydantic Schema 规范
+
+#### 请求模型命名
+- 创建: `{Resource}Create`
+- 更新: `{Resource}Update`
+- 查询: `{Resource}Query`
+
+#### 响应模型命名
+- 单个资源: `{Resource}Response`
+- 列表响应: `{Resource}ListResponse`
+
+```python
+# 请求模型示例
+class UserCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    email: EmailStr
+    age: Optional[int] = Field(None, ge=0, le=150)
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    email: Optional[EmailStr] = None
+    age: Optional[int] = Field(None, ge=0, le=150)
+
+# 响应模型示例
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    age: Optional[int]
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class UserListResponse(BaseModel):
+    items: List[UserResponse]
+    total: int
+    page: int
+    size: int
+    pages: int
+```
+
+## 路由设计模式
+
+### 路由组织结构
+```python
+from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import List, Optional
+
+router = APIRouter(
+    prefix="/api/v1/users",
+    tags=["users"],
+    responses={404: {"description": "Not found"}}
+)
+
+# 列表查询端点
+@router.get("/", response_model=UserListResponse)
+async def list_users(
+    page: int = Query(1, ge=1, description="页码"),
+    size: int = Query(10, ge=1, le=100, description="每页大小"),
+    search: Optional[str] = Query(None, description="搜索关键词"),
+    db: Session = Depends(get_db)
+):
+    """获取用户列表"""
+    # 实现逻辑
+    pass
+
+# 单个资源查询
+@router.get("/{user_id}", response_model=UserResponse)
+async def get_user(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    """获取单个用户信息"""
+    # 实现逻辑
+    pass
+
+# 创建资源
+@router.post("/", response_model=UserResponse, status_code=201)
+async def create_user(
+    user: UserCreate,
+    db: Session = Depends(get_db)
+):
+    """创建新用户"""
+    # 实现逻辑
+    pass
+
+# 更新资源
+@router.put("/{user_id}", response_model=UserResponse)
+async def update_user(
+    user_id: int,
+    user: UserUpdate,
+    db: Session = Depends(get_db)
+):
+    """更新用户信息"""
+    # 实现逻辑
+    pass
+
+# 删除资源
+@router.delete("/{user_id}", status_code=204)
+async def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    """删除用户"""
+    # 实现逻辑
+    pass
+```
+
+## 错误处理规范
+
+### HTTP 状态码使用
+- **200** - 成功 (GET, PUT, PATCH)
+- **201** - 创建成功 (POST)
+- **204** - 无内容 (DELETE)
+- **400** - 请求错误
+- **401** - 未认证
+- **403** - 权限不足
+- **404** - 资源不存在
+- **409** - 冲突 (资源已存在)
+- **422** - 验证错误
+- **500** - 服务器错误
+
+### 异常处理模式
+```python
+from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
+
+# 标准异常处理
+async def create_resource(data: ResourceCreate, db: Session):
+    try:
+        # 业务逻辑
+        result = await service.create(data, db)
+        return result
+    except IntegrityError:
+        raise HTTPException(
+            status_code=409,
+            detail="Resource already exists"
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
+```
+
+### 自定义异常类
+```python
+class BusinessException(Exception):
+    def __init__(self, message: str, status_code: int = 400):
+        self.message = message
+        self.status_code = status_code
+        super().__init__(self.message)
+
+class ResourceNotFoundError(BusinessException):
+    def __init__(self, resource_type: str, resource_id: str):
+        message = f"{resource_type} with id {resource_id} not found"
+        super().__init__(message, 404)
+
+class DuplicateResourceError(BusinessException):
+    def __init__(self, resource_type: str, field: str, value: str):
+        message = f"{resource_type} with {field} '{value}' already exists"
+        super().__init__(message, 409)
+```
+
+## 依赖注入模式
+
+### 数据库会话依赖
+```python
+from sqlalchemy.orm import Session
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+```
+
+### 认证依赖
+```python
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+security = HTTPBearer()
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db)
+) -> User:
+    token = credentials.credentials
+    # 验证 token 逻辑
+    user = await auth_service.verify_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return user
+
+async def get_admin_user(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user
+```
+
+### 权限控制依赖
+```python
+from functools import wraps
+from typing import List
+
+def require_permissions(permissions: List[str]):
+    def permission_checker(
+        current_user: User = Depends(get_current_user)
+    ):
+        user_permissions = [p.name for p in current_user.permissions]
+        if not all(perm in user_permissions for perm in permissions):
+            raise HTTPException(
+                status_code=403,
+                detail="Insufficient permissions"
+            )
+        return current_user
+    return permission_checker
+
+# 使用示例
+@router.get("/admin-only")
+async def admin_endpoint(
+    current_user: User = Depends(require_permissions(["admin"]))
+):
+    return {"message": "Admin access granted"}
+```
+
+## 分页处理规范
+
+### 分页参数标准化
+```python
+class PaginationParams(BaseModel):
+    page: int = Field(1, ge=1, description="页码")
+    size: int = Field(10, ge=1, le=100, description="每页大小")
+
+class PaginatedResponse(BaseModel, Generic[T]):
+    items: List[T]
+    total: int
+    page: int
+    size: int
+    pages: int
+    has_next: bool
+    has_prev: bool
+
+def paginate_query(
+    query,
+    page: int = 1,
+    size: int = 10
+) -> dict:
+    total = query.count()
+    items = query.offset((page - 1) * size).limit(size).all()
+    pages = (total + size - 1) // size
+    
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "size": size,
+        "pages": pages,
+        "has_next": page < pages,
+        "has_prev": page > 1
+    }
+```
+
+## 查询参数规范
+
+### 排序参数
+```python
+from enum import Enum
+
+class SortOrder(str, Enum):
+    ASC = "asc"
+    DESC = "desc"
+
+@router.get("/")
+async def list_resources(
+    sort_by: str = Query("created_at", description="排序字段"),
+    sort_order: SortOrder = Query(SortOrder.DESC, description="排序方向"),
+    db: Session = Depends(get_db)
+):
+    # 实现排序逻辑
+    pass
+```
+
+### 过滤参数
+```python
+from datetime import datetime
+from typing import Optional
+
+@router.get("/")
+async def list_resources(
+    # 基础过滤
+    status: Optional[str] = Query(None, description="状态过滤"),
+    category: Optional[str] = Query(None, description="类别过滤"),
+    
+    # 日期范围过滤
+    created_after: Optional[datetime] = Query(None, description="创建时间起始"),
+    created_before: Optional[datetime] = Query(None, description="创建时间结束"),
+    
+    # 搜索过滤
+    search: Optional[str] = Query(None, min_length=1, description="关键词搜索"),
+    
+    db: Session = Depends(get_db)
+):
+    # 实现过滤逻辑
+    pass
+```
+
+## 响应格式标准化
+
+### 统一响应格式
+```python
+from typing import Generic, TypeVar, Optional
+
+T = TypeVar('T')
+
+class ApiResponse(BaseModel, Generic[T]):
+    success: bool = True
+    message: str = "Success"
+    data: Optional[T] = None
+    error_code: Optional[str] = None
+
+class ApiListResponse(BaseModel, Generic[T]):
+    success: bool = True
+    message: str = "Success"
+    data: List[T]
+    pagination: Optional[dict] = None
+    error_code: Optional[str] = None
+
+# 使用包装器函数
+def success_response(data=None, message="Success"):
+    return ApiResponse(success=True, message=message, data=data)
+
+def error_response(message="Error", error_code=None):
+    return ApiResponse(success=False, message=message, error_code=error_code)
+```
+
+## 中间件和日志
+
+### 请求日志中间件
+```python
+import time
+import logging
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
+
+logger = logging.getLogger(__name__)
+
+class RequestLoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
+        
+        # 记录请求信息
+        logger.info(f"Request: {request.method} {request.url}")
+        
+        response = await call_next(request)
+        
+        # 记录响应信息
+        process_time = time.time() - start_time
+        logger.info(
+            f"Response: {response.status_code} "
+            f"Time: {process_time:.4f}s"
+        )
+        
+        return response
+```
+
+## 验证和序列化
+
+### 数据验证规则
+```python
+from pydantic import validator, Field
+import re
+
+class UserCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=50)
+    email: str = Field(..., regex=r'^[^@]+@[^@]+\.[^@]+$')
+    password: str = Field(..., min_length=8)
+    
+    @validator('name')
+    def validate_name(cls, v):
+        if not re.match(r'^[a-zA-Z\s]+$', v):
+            raise ValueError('Name must contain only letters and spaces')
+        return v.strip()
+    
+    @validator('password')
+    def validate_password(cls, v):
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('Password must contain at least one uppercase letter')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('Password must contain at least one lowercase letter')
+        if not re.search(r'\d', v):
+            raise ValueError('Password must contain at least one digit')
+        return v
+```
+
+## 测试规范
+
+### 端点测试模式
+```python
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+@pytest.fixture
+def client():
+    # 测试客户端设置
+    return TestClient(app)
+
+def test_create_user_success(client):
+    user_data = {
+        "name": "Test User",
+        "email": "test@example.com",
+        "password": "TestPass123"
+    }
+    
+    response = client.post("/api/v1/users/", json=user_data)
+    
+    assert response.status_code == 201
+    data = response.json()
+    assert data["name"] == user_data["name"]
+    assert data["email"] == user_data["email"]
+    assert "password" not in data
+
+def test_create_user_validation_error(client):
+    user_data = {
+        "name": "",  # 无效数据
+        "email": "invalid-email"
+    }
+    
+    response = client.post("/api/v1/users/", json=user_data)
+    
+    assert response.status_code == 422
+    assert "validation error" in response.json()["detail"].lower()
+```
+
+## 文档和注释
+
+### API 文档规范
+```python
+@router.post(
+    "/",
+    response_model=UserResponse,
+    status_code=201,
+    summary="创建新用户",
+    description="创建一个新的用户账户，需要提供用户名、邮箱和密码",
+    responses={
+        201: {"description": "用户创建成功"},
+        400: {"description": "请求参数错误"},
+        409: {"description": "用户已存在"}
+    }
+)
+async def create_user(
+    user: UserCreate = Body(..., description="用户创建数据"),
+    db: Session = Depends(get_db)
+):
+    """
+    创建新用户
+    
+    - **name**: 用户姓名 (2-50字符)
+    - **email**: 用户邮箱 (必须是有效邮箱格式)
+    - **password**: 用户密码 (至少8字符，包含大小写字母和数字)
+    """
+    # 实现逻辑
+    pass
+```
+
+## 部署和配置
+
+### 环境配置管理
+```python
+from pydantic import BaseSettings
+
+class Settings(BaseSettings):
+    app_name: str = "API Service"
+    debug: bool = False
+    database_url: str
+    secret_key: str
+    cors_origins: list = ["http://localhost:3000"]
+    
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+```
+
+这些规范确保 FastAPI 接口开发的一致性、可维护性和最佳实践的遵循。
+

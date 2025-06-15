@@ -1,0 +1,82 @@
+---
+description: Development Standards
+globs: 
+alwaysApply: false
+---
+# Cursor AI Assistant Rules
+
+## Reference Documents
+- 详细前端开发标准: `.cursor/rules/development-standards.mdc`
+- FastAPI 接口规范: `.cursor/rules/fastapi-api-standards.mdc`
+
+## Core Principles
+- 优先考虑类型安全、代码一致性和可维护性
+- 使用 Vue 3 + TypeScript + FastAPI + Element Plus 的现代最佳实践
+- 遵循既定的项目架构模式
+
+## Quick Reference Guidelines
+
+### Frontend (Vue 3 + TypeScript + Element Plus)
+- 始终使用 Composition API 与 `<script setup lang="ts">`
+- 组件文件用 PascalCase，目录用 kebab-case
+- 用 TypeScript 接口定义 props 和 emits
+- Element Plus 组件使用双闭合标签
+- 导入分组: Vue → 第三方 → 内部 → 相对路径
+
+### Backend (FastAPI)
+- 详细规范参考: `.cursor/rules/fastapi-api-standards.mdc`
+- 使用 Pydantic 模型进行请求/响应验证
+- 实现适当的依赖注入和错误处理
+- 使用类型提示和标准 HTTP 状态码
+
+## Key Standards Summary
+
+### Type Safety & Code Quality
+- 严格的 TypeScript 配置，避免使用 `any`
+- 为所有数据结构定义接口
+- 前端使用 Prettier，后端使用 Black 格式化
+- 行长度限制在 100 字符内
+
+### Development Workflow
+- 逻辑分组的目录结构
+- 一致的命名约定
+- 关注点分离 (组件、工具、存储等)
+- 清晰的导入/导出模式
+
+## AI Assistant Instructions
+
+提供代码建议和修改时，请遵循：
+
+### 核心原则
+1. **遵循既定模式** - 保持与现有代码库的一致性
+2. **类型安全** - 使用 TypeScript 接口定义所有数据结构
+3. **错误处理** - 实现完善的错误处理机制
+4. **命名规范** - 遵循开发标准中的命名约定
+5. **完整可运行** - 提供可立即使用的完整代码
+6. **现代语法** - 使用 ES6+ 和 Vue 3 Composition API
+
+### 代码生成要求
+- 包含所有必要的导入和依赖
+- 遵循项目架构模式
+- 实现完整的 TypeScript 类型定义
+- 使用描述性的变量和函数名
+- 为复杂逻辑添加注释
+
+### 重构方法
+- 保持向后兼容性
+- 遵循单一职责原则
+- 实现关注点分离
+- 更新相关文档和类型
+
+## 开发流程规范
+
+### 测试标准
+- **前端**: 业务逻辑单元测试，组件行为测试
+- **后端**: 业务逻辑和 API 端点测试，高覆盖率
+
+### 文档要求
+- 公共 API 和接口文档
+- JSDoc 注释用于复杂函数
+- 环境变量和配置文档
+
+*这些规则旨在维护代码质量、一致性和团队生产力。请根据具体上下文和任务要求遵循这些标准。* 

@@ -47,7 +47,7 @@ AI 研发辅助平台 (AI Development Assistant Platform)
 - **Web框架**: FastAPI 0.104.1
 - **ASGI服务器**: Uvicorn 0.24.0
 - **ORM**: SQLModel 0.0.14
-- **数据库**: SQLite (开发) / PostgreSQL (生产)
+- **数据库**: SQLite
 - **缓存**: Redis 5.0.1
 - **任务队列**: Celery 5.3.4
 - **认证**: 简化Token认证系统
