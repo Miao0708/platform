@@ -535,13 +535,4 @@ export const taskUtils = {
   }
 }
 
-// 导出主要的API对象
-export {
-  codeDiffTaskApi,
-  requirementTaskApi,
-  pipelineTaskApi,
-  taskExecutionApi,
-  taskStatsApi,
-  taskWebSocket,
-  taskUtils
-}
+// 导出主要的API对象已在上面使用export关键字导出

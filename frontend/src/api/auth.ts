@@ -12,7 +12,6 @@ export interface LoginRequest {
 export interface LoginResponse {
   access_token: string
   token_type: string
-  expires_in: number
   user: {
     id: number
     username: string
@@ -23,9 +22,7 @@ export interface LoginResponse {
 // 注册请求参数
 export interface RegisterRequest {
   username: string
-  email: string
   password: string
-  full_name: string
 }
 
 // 认证API
@@ -65,36 +62,6 @@ export const authUtils = {
   isLoggedIn: (): boolean => {
     const token = localStorage.getItem('token')
     return !!token
-  },
-
-  // 解析Token获取用户信息（简化Token格式：user_id:token:timestamp）
-  parseToken: (token: string) => {
-    try {
-      const parts = token.split(':')
-      if (parts.length !== 3) return null
-      
-      const [userId, tokenPart, timestamp] = parts
-      return {
-        userId: userId,
-        timestamp: parseInt(timestamp),
-        exp: parseInt(timestamp) + (30 * 24 * 60 * 60) // 30天后过期
-      }
-    } catch (error) {
-      console.error('Token解析失败:', error)
-      return null
-    }
-  },
-
-  // 检查Token是否即将过期（提前1天刷新）
-  isTokenExpiringSoon: (token: string): boolean => {
-    const payload = authUtils.parseToken(token)
-    if (!payload || !payload.exp) return true
-    
-    const expirationTime = payload.exp * 1000 // 转换为毫秒
-    const currentTime = Date.now()
-    const oneDay = 24 * 60 * 60 * 1000 // 1天
-    
-    return (expirationTime - currentTime) < oneDay
   }
 }
 

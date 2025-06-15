@@ -7,7 +7,7 @@ from .prompt import PromptTemplate
 from .knowledge_base import KnowledgeBase, Document, DocumentChunk
 from .pipeline import CodeDiff, RequirementText
 from .task import CodeDiffTask, RequirementParseTask, PipelineTask, TaskExecution
-from .user import User, UserSession, UserLoginLog
+from .user import User
 from .ai_model import AIModelConfig, AIModelTestResult
 from .conversation import Conversation, Message
 
@@ -26,8 +26,6 @@ __all__ = [
     "CodeDiffTask",
     "RequirementParseTask",
     "User",
-    "UserSession",
-    "UserLoginLog",
     "AIModelConfig",
     "AIModelTestResult",
     "Conversation",

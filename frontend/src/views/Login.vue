@@ -2,9 +2,8 @@
   <div class="login-container">
     <div class="login-card">
       <div class="login-header">
-        <img src="@/assets/logo.svg" alt="Logo" class="logo" />
         <h1 class="title">AI研发辅助平台</h1>
-        <p class="subtitle">智能化代码评审与测试用例生成</p>
+        <p class="subtitle">用户登录</p>
       </div>
       
       <el-form
@@ -36,12 +35,6 @@
         </el-form-item>
         
         <el-form-item>
-          <el-checkbox v-model="loginForm.remember">
-            记住我
-          </el-checkbox>
-        </el-form-item>
-        
-        <el-form-item>
           <el-button
             type="primary"
             size="large"
@@ -62,9 +55,8 @@
             show-icon
           >
             <template #default>
-              <div style="font-size: 12px; line-height: 1.5;">
+              <div style="font-size: 12px;">
                 <p><strong>管理员:</strong> admin / admin123456</p>
-                <p><strong>普通用户:</strong> user / user123456</p>
               </div>
             </template>
           </el-alert>
@@ -93,19 +85,16 @@ const loading = ref(false)
 // 表单数据
 const loginForm = reactive({
   username: 'admin',
-  password: 'admin123456',
-  remember: false
+  password: 'admin123456'
 })
 
 // 表单验证规则
 const loginRules: FormRules = {
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度在 3 到 20 个字符', trigger: 'blur' }
+    { required: true, message: '请输入用户名', trigger: 'blur' }
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' }
+    { required: true, message: '请输入密码', trigger: 'blur' }
   ]
 }
 
@@ -148,12 +137,6 @@ const handleLogin = async () => {
     .login-header {
       text-align: center;
       margin-bottom: 32px;
-      
-      .logo {
-        width: 64px;
-        height: 64px;
-        margin-bottom: 16px;
-      }
       
       .title {
         font-size: 24px;
