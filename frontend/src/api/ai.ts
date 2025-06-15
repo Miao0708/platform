@@ -7,7 +7,7 @@ export const aiModelApi = {
   getModelConfigs: () => api.get<AIModelConfig[]>('/ai/models'),
   
   // 创建模型配置
-  createModelConfig: (data: Omit<AIModelConfig, 'id' | 'createdAt' | 'updatedAt'>) =>
+  createModelConfig: (data: Omit<AIModelConfig, 'id'>) =>
     api.post<AIModelConfig>('/ai/models', data),
   
   // 更新模型配置
@@ -78,7 +78,7 @@ export const promptApi = {
   }) => api.get<PromptTemplate[]>('/ai/prompts', { params }),
   
   // 创建Prompt模板
-  createPromptTemplate: (data: Omit<PromptTemplate, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>) =>
+  createPromptTemplate: (data: Omit<PromptTemplate, 'id' | 'usageCount'>) =>
     api.post<PromptTemplate>('/ai/prompts', data),
   
   // 更新Prompt模板

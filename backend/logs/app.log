@@ -223,3 +223,73 @@ FROM prompt_templates
 2025-06-16 00:12:41,687 - app.core.logging - INFO - [2m2025-06-15T16:12:41.687825Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m2.0[0m [36mparams[0m=[35m(100, 0)[0m [36mquery[0m=[35m'SELECT prompt_templates.id, prompt_templates.created_at, prompt_templates.updated_at, prompt_templates.name, prompt_templates.identifier, prompt_templates.content, prompt_templates.description, prompt_templates.category, prompt_templates.is_active \nFROM prompt_templates\n LIMIT ? OFFSET ?'[0m
 2025-06-16 00:12:41,690 - sqlalchemy.engine.Engine - INFO - ROLLBACK
 2025-06-16 00:12:41,691 - app.core.logging - INFO - [2m2025-06-15T16:12:41.691827Z[0m [[32m[1minfo     [0m] [1m📤 HTTP响应详情                    [0m [[0m[1m[34mapp.core.logging[0m][0m [36mheaders[0m=[35m{'content-length': '335', 'content-type': 'application/json'}[0m [36mprocess_time_ms[0m=[35m9.0[0m [36mrequest_id[0m=[35mreq_1750003961682[0m [36mstatus_code[0m=[35m200[0m
+2025-06-16 00:15:50,597 - app.core.logging - INFO - [2m2025-06-15T16:15:50.597908Z[0m [[32m[1minfo     [0m] [1m📋 日志系统初始化完成                   [0m [[0m[1m[34mapp.core.logging[0m][0m [36mlog_file[0m=[35m./logs/app.log[0m [36mlog_level[0m=[35mDEBUG[0m
+2025-06-16 00:15:50,598 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-06-16 00:15:50,599 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("global_git_credentials")
+2025-06-16 00:15:50,599 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,600 - app.core.logging - INFO - [2m2025-06-15T16:15:50.600208Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m0.96[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("global_git_credentials")'[0m
+2025-06-16 00:15:50,600 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("repositories")
+2025-06-16 00:15:50,600 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,601 - app.core.logging - INFO - [2m2025-06-15T16:15:50.601208Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m1.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("repositories")'[0m
+2025-06-16 00:15:50,601 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("prompt_templates")
+2025-06-16 00:15:50,601 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,601 - app.core.logging - INFO - [2m2025-06-15T16:15:50.601208Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m0.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("prompt_templates")'[0m
+2025-06-16 00:15:50,601 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("knowledge_bases")
+2025-06-16 00:15:50,602 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,602 - app.core.logging - INFO - [2m2025-06-15T16:15:50.602208Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m1.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("knowledge_bases")'[0m
+2025-06-16 00:15:50,602 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("documents")
+2025-06-16 00:15:50,602 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,603 - app.core.logging - INFO - [2m2025-06-15T16:15:50.603208Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m1.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("documents")'[0m
+2025-06-16 00:15:50,603 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("document_chunks")
+2025-06-16 00:15:50,604 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,604 - app.core.logging - INFO - [2m2025-06-15T16:15:50.604209Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m1.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("document_chunks")'[0m
+2025-06-16 00:15:50,604 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("code_diffs")
+2025-06-16 00:15:50,604 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,605 - app.core.logging - INFO - [2m2025-06-15T16:15:50.605208Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m1.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("code_diffs")'[0m
+2025-06-16 00:15:50,605 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("requirement_texts")
+2025-06-16 00:15:50,605 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,605 - app.core.logging - INFO - [2m2025-06-15T16:15:50.605208Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m0.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("requirement_texts")'[0m
+2025-06-16 00:15:50,606 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("code_diff_tasks")
+2025-06-16 00:15:50,606 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,606 - app.core.logging - INFO - [2m2025-06-15T16:15:50.606209Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m0.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("code_diff_tasks")'[0m
+2025-06-16 00:15:50,606 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("requirement_parse_tasks")
+2025-06-16 00:15:50,607 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,607 - app.core.logging - INFO - [2m2025-06-15T16:15:50.607307Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m1.1[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("requirement_parse_tasks")'[0m
+2025-06-16 00:15:50,607 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("pipeline_tasks")
+2025-06-16 00:15:50,608 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,608 - app.core.logging - INFO - [2m2025-06-15T16:15:50.608307Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m1.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("pipeline_tasks")'[0m
+2025-06-16 00:15:50,608 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("task_executions")
+2025-06-16 00:15:50,609 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,609 - app.core.logging - INFO - [2m2025-06-15T16:15:50.609309Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m1.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("task_executions")'[0m
+2025-06-16 00:15:50,609 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("users")
+2025-06-16 00:15:50,610 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,610 - app.core.logging - INFO - [2m2025-06-15T16:15:50.610307Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m1.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("users")'[0m
+2025-06-16 00:15:50,610 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("ai_model_configs")
+2025-06-16 00:15:50,610 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,611 - app.core.logging - INFO - [2m2025-06-15T16:15:50.611307Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m1.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("ai_model_configs")'[0m
+2025-06-16 00:15:50,611 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("ai_model_test_results")
+2025-06-16 00:15:50,611 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,611 - app.core.logging - INFO - [2m2025-06-15T16:15:50.611307Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m0.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("ai_model_test_results")'[0m
+2025-06-16 00:15:50,611 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("conversations")
+2025-06-16 00:15:50,612 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,612 - app.core.logging - INFO - [2m2025-06-15T16:15:50.612308Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m1.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("conversations")'[0m
+2025-06-16 00:15:50,613 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("messages")
+2025-06-16 00:15:50,613 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-06-16 00:15:50,613 - app.core.logging - INFO - [2m2025-06-15T16:15:50.613309Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m0.0[0m [36mparams[0m=[35m()[0m [36mquery[0m=[35m'PRAGMA main.table_info("messages")'[0m
+2025-06-16 00:15:50,613 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-06-16 00:15:50,614 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-06-16 00:15:50,622 - sqlalchemy.engine.Engine - INFO - SELECT users.id, users.created_at, users.updated_at, users.username, users.hashed_password, users.is_active, users.is_superuser 
+FROM users 
+WHERE users.username = ?
+2025-06-16 00:15:50,623 - sqlalchemy.engine.Engine - INFO - [generated in 0.00063s] ('admin',)
+2025-06-16 00:15:50,623 - app.core.logging - INFO - [2m2025-06-15T16:15:50.623827Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m1.0[0m [36mparams[0m=[35m('admin',)[0m [36mquery[0m=[35m'SELECT users.id, users.created_at, users.updated_at, users.username, users.hashed_password, users.is_active, users.is_superuser \nFROM users \nWHERE users.username = ?'[0m
+2025-06-16 00:15:50,625 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-06-16 00:15:50,666 - app.core.logging - INFO - [2m2025-06-15T16:15:50.666548Z[0m [[32m[1minfo     [0m] [1m📥 HTTP请求详情                    [0m [[0m[1m[34mapp.core.logging[0m][0m [36mbody[0m=[35mNone[0m [36mclient_host[0m=[35m127.0.0.1[0m [36mheaders[0m=[35m{'host': '127.0.0.1:8000', 'connection': 'close', 'sec-ch-ua-platform': '"Windows"', 'authorization': '***', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36', 'accept': 'application/json, text/plain, */*', 'sec-ch-ua': '"Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"', 'sec-ch-ua-mobile': '?0', 'sec-fetch-site': 'same-origin', 'sec-fetch-mode': 'cors', 'sec-fetch-dest': 'empty', 'referer': 'http://localhost:3000/configuration/prompts', 'accept-encoding': 'gzip, deflate, br, zstd', 'accept-language': 'zh-CN,zh;q=0.9', 'cookie': '***'}[0m [36mmethod[0m=[35mGET[0m [36mpath[0m=[35m/api/v1/ai/prompts[0m [36mquery_params[0m=[35m{}[0m [36mrequest_id[0m=[35mreq_1750004150666[0m [36murl[0m=[35mhttp://127.0.0.1:8000/api/v1/ai/prompts[0m [36muser_agent[0m=[35m'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'[0m
+2025-06-16 00:15:50,671 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-06-16 00:15:50,672 - sqlalchemy.engine.Engine - INFO - SELECT prompt_templates.id, prompt_templates.created_at, prompt_templates.updated_at, prompt_templates.name, prompt_templates.identifier, prompt_templates.content, prompt_templates.description, prompt_templates.category, prompt_templates.is_active 
+FROM prompt_templates
+ LIMIT ? OFFSET ?
+2025-06-16 00:15:50,673 - sqlalchemy.engine.Engine - INFO - [generated in 0.00084s] (100, 0)
+2025-06-16 00:15:50,674 - app.core.logging - INFO - [2m2025-06-15T16:15:50.674279Z[0m [[32m[1minfo     [0m] [1m🗄️ 数据库查询                      [0m [[0m[1m[34mapp.core.logging[0m][0m [36mexecution_time_ms[0m=[35m1.04[0m [36mparams[0m=[35m(100, 0)[0m [36mquery[0m=[35m'SELECT prompt_templates.id, prompt_templates.created_at, prompt_templates.updated_at, prompt_templates.name, prompt_templates.identifier, prompt_templates.content, prompt_templates.description, prompt_templates.category, prompt_templates.is_active \nFROM prompt_templates\n LIMIT ? OFFSET ?'[0m
+2025-06-16 00:15:50,675 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-06-16 00:15:50,676 - app.core.logging - INFO - [2m2025-06-15T16:15:50.676408Z[0m [[32m[1minfo     [0m] [1m📤 HTTP响应详情                    [0m [[0m[1m[34mapp.core.logging[0m][0m [36mheaders[0m=[35m{'content-length': '215', 'content-type': 'application/json'}[0m [36mprocess_time_ms[0m=[35m9.86[0m [36mrequest_id[0m=[35mreq_1750004150666[0m [36mstatus_code[0m=[35m200[0m

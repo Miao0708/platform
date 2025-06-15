@@ -64,7 +64,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createdAt" label="创建时间" />
+
         <el-table-column label="操作" width="300">
           <template #default="scope">
             <el-button
@@ -544,8 +544,7 @@ const loadRequirements = async () => {
         source: 'upload',
         originalFilename: '登录需求.md',
         status: 'completed',
-        createdAt: '2024-01-15 14:30:00',
-        updatedAt: '2024-01-15 14:30:00'
+
       },
       {
         id: '2',
@@ -553,8 +552,7 @@ const loadRequirements = async () => {
         originalContent: '支付功能需要支持多种支付方式，包括支付宝、微信支付等...',
         source: 'manual',
         status: 'processing',
-        createdAt: '2024-01-15 13:45:00',
-        updatedAt: '2024-01-15 13:45:00'
+
       }
     ]
     

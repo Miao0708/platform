@@ -35,8 +35,6 @@ export type EntityId = string
 // 基础实体接口
 export interface BaseEntity {
   id: EntityId
-  createdAt: string
-  updatedAt?: string
 }
 
 // 分页查询参数

@@ -44,7 +44,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="updatedAt" label="更新时间" />
+
         <el-table-column label="操作" width="200">
           <template #default="scope">
             <el-button type="text" @click="showPreviewTemplate(scope.row)">
@@ -385,8 +385,7 @@ const loadTemplates = async () => {
       variables: template.variables || [],
       isPublic: template.is_public,
       usageCount: template.usage_count,
-      createdAt: template.created_at,
-      updatedAt: template.updated_at
+      
     }))
   } catch (error) {
     console.error('Load templates failed:', error)
@@ -416,9 +415,7 @@ const loadTemplates = async () => {
         tags: ['安全检查', '代码评审', '漏洞扫描'],
         variables: ['code_diff'],
         isPublic: true,
-        usageCount: 156,
-        createdAt: '2024-01-15 10:30:00',
-        updatedAt: '2024-01-15 10:30:00'
+        usageCount: 156
       },
       {
         id: '2',
@@ -442,9 +439,7 @@ const loadTemplates = async () => {
         tags: ['需求分析', '功能拆解', '用户故事'],
         variables: ['requirement'],
         isPublic: true,
-        usageCount: 89,
-        createdAt: '2024-01-10 14:20:00',
-        updatedAt: '2024-01-10 14:20:00'
+        usageCount: 89
       },
       {
         id: '3',
@@ -471,9 +466,7 @@ const loadTemplates = async () => {
         tags: ['测试用例', '自动化测试', '质量保证'],
         variables: ['requirement', 'code_diff'],
         isPublic: true,
-        usageCount: 234,
-        createdAt: '2024-01-08 09:15:00',
-        updatedAt: '2024-01-08 09:15:00'
+        usageCount: 234
       }
     ]
   }

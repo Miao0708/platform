@@ -21,8 +21,7 @@ export interface AIModel {
   totalTokensUsed: number
   lastUsedAt?: string
   extraConfig?: Record<string, any>
-  createdAt: string
-  updatedAt?: string
+
 }
 
 // 创建 AI 模型请求参数
