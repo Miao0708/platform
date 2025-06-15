@@ -68,8 +68,39 @@ export const requirementsApi = {
   createRequirement: (data: CreateRequirementRequest): Promise<RequirementInfo> => 
     api.post('/requirements', data),
 
-  // 上传需求文件
-  uploadRequirement: (file: File, name?: string) => {
+  // 上传需求文件（标准化版本）
+  uploadRequirement: (data: {
+    file: File
+    name: string
+    category?: string
+    priority?: 'low' | 'medium' | 'high' | 'urgent'
+    taskMetadata?: Record<string, any>
+  }) => {
+    const formData = new FormData()
+    formData.append('file', data.file)
+    formData.append('name', data.name)
+    
+    if (data.category) {
+      formData.append('category', data.category)
+    }
+    
+    if (data.priority) {
+      formData.append('priority', data.priority)
+    }
+    
+    if (data.taskMetadata) {
+      formData.append('task_metadata', JSON.stringify(data.taskMetadata))
+    }
+    
+    return api.post('/requirements/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  },
+
+  // 简化的上传方法（向后兼容）
+  uploadRequirementSimple: (file: File, name?: string) => {
     const formData = new FormData()
     formData.append('file', file)
     if (name) {

@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
 import type { ApiResponse } from '@/types'
+import { convertKeysToCamelCase, convertKeysToSnakeCase } from '@/utils/caseConverter'
 
 // 根据环境设置 API 基础路径
 const getBaseURL = () => {
@@ -30,13 +31,27 @@ request.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`
     }
 
+    // 数据格式转换：前端camelCase -> 后端snake_case
+    if (config.data && typeof config.data === 'object') {
+      // 对于表单数据或特殊数据类型，跳过转换
+      if (!(config.data instanceof FormData) && !(config.data instanceof ArrayBuffer)) {
+        config.data = convertKeysToSnakeCase(config.data)
+      }
+    }
+
+    // URL参数转换
+    if (config.params && typeof config.params === 'object') {
+      config.params = convertKeysToSnakeCase(config.params)
+    }
+
     // 添加调试日志
     console.log('API Request:', {
       url: config.url,
       method: config.method,
       baseURL: config.baseURL,
       headers: config.headers,
-      data: config.data
+      data: config.data,
+      params: config.params
     })
 
     return config
@@ -50,14 +65,21 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response: AxiosResponse<ApiResponse>) => {
+    // 数据格式转换：确保响应数据为camelCase格式
+    let responseData = response.data
+    if (responseData && typeof responseData === 'object') {
+      responseData = convertKeysToCamelCase(responseData)
+    }
+
     // 添加调试日志
     console.log('API Response:', {
       url: response.config.url,
       status: response.status,
-      data: response.data
+      originalData: response.data,
+      convertedData: responseData
     })
 
-    const { code, message, data } = response.data
+    const { code, message, data } = responseData
 
     // 成功响应
     if (code === 200) {

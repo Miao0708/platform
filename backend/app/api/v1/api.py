@@ -16,18 +16,11 @@ api_router.include_router(
     tags=["用户认证"]
 )
 
-# 用户管理相关路由（适配前端）
+# 用户管理相关路由（标准RESTful路径）
 api_router.include_router(
     users.router,
     prefix="/users",
     tags=["用户管理"]
-)
-
-# 简化的用户接口路由（适配前端调用）
-api_router.include_router(
-    users.router,
-    prefix="/user",
-    tags=["用户管理-简化接口"]
 )
 
 # AI模型配置相关路由（适配前端）

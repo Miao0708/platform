@@ -288,12 +288,38 @@ class CRUDUserLoginLog(CRUDBase[UserLoginLog, dict, dict]):
         db: Session, 
         *, 
         user_id: int, 
-        limit: int = 50
+        limit: int = 50,
+        offset: int = 0
     ) -> List[UserLoginLog]:
         """获取用户登录日志"""
         statement = select(UserLoginLog).where(
             UserLoginLog.user_id == user_id
-        ).order_by(UserLoginLog.created_at.desc()).limit(limit)
+        ).order_by(UserLoginLog.created_at.desc()).offset(offset).limit(limit)
+        return db.exec(statement).all()
+    
+    def get_user_logs_count(self, db: Session, *, user_id: int) -> int:
+        """获取用户登录日志总数"""
+        statement = select(func.count(UserLoginLog.id)).where(
+            UserLoginLog.user_id == user_id
+        )
+        return db.exec(statement).one()
+    
+    def get_recent_failed_logs(
+        self, 
+        db: Session, 
+        *, 
+        user_id: int, 
+        hours: int = 24
+    ) -> List[UserLoginLog]:
+        """获取最近失败的登录日志"""
+        from datetime import datetime, timedelta
+        since_time = datetime.utcnow() - timedelta(hours=hours)
+        
+        statement = select(UserLoginLog).where(
+            UserLoginLog.user_id == user_id,
+            UserLoginLog.success == False,
+            UserLoginLog.created_at >= since_time
+        ).order_by(UserLoginLog.created_at.desc())
         return db.exec(statement).all()
 
 

@@ -99,8 +99,28 @@ export const knowledgeApi = {
   }) => 
     api.get(`/knowledge-bases/${knowledgeBaseId}/documents`, { params }),
 
-  // 上传文档到知识库
-  uploadDocument: (knowledgeBaseId: string, file: File) => {
+  // 上传文档到知识库（标准化版本）
+  uploadDocument: (data: {
+    knowledgeBaseId: string
+    file: File
+    metadata?: Record<string, any>
+  }) => {
+    const formData = new FormData()
+    formData.append('file', data.file)
+    
+    if (data.metadata) {
+      formData.append('metadata', JSON.stringify(data.metadata))
+    }
+    
+    return api.post(`/knowledge-bases/${data.knowledgeBaseId}/documents/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  },
+
+  // 简化的上传方法（向后兼容）
+  uploadDocumentSimple: (knowledgeBaseId: string, file: File) => {
     const formData = new FormData()
     formData.append('file', file)
     return api.post(`/knowledge-bases/${knowledgeBaseId}/documents/upload`, formData, {

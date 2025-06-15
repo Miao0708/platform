@@ -216,80 +216,8 @@ def create_requirement_task(
         )
 
 
-@router.post("/requirements/upload", response_model=RequirementParseTaskResponse, tags=["需求解析任务"])
-async def upload_requirement_file(
-    *,
-    db: Session = Depends(get_db),
-    file: UploadFile = File(...),
-    name: str = Form(...),
-    category: Optional[str] = Form(None),
-    priority: str = Form("medium"),
-    task_metadata: Optional[str] = Form(None)
-):
-    """上传需求文件并创建解析任务"""
-    # 验证文件类型
-    allowed_types = [".txt", ".md", ".docx", ".pdf"]
-    file_ext = os.path.splitext(file.filename)[1].lower()
-    if file_ext not in allowed_types:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"不支持的文件类型: {file_ext}"
-        )
-    
-    # 验证文件大小
-    if file.size > settings.MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"文件大小超过限制: {settings.MAX_FILE_SIZE} bytes"
-        )
-    
-    try:
-        # 保存文件
-        upload_dir = os.path.join(settings.UPLOAD_DIR, "requirements")
-        os.makedirs(upload_dir, exist_ok=True)
-        
-        file_path = os.path.join(upload_dir, f"{int(time.time())}_{file.filename}")
-        
-        with open(file_path, "wb") as f:
-            content = await file.read()
-            f.write(content)
-        
-        # 解析元数据
-        metadata = {}
-        if task_metadata:
-            try:
-                metadata = json.loads(task_metadata)
-            except json.JSONDecodeError:
-                pass
-        
-        # 创建任务
-        task_data = RequirementParseTaskCreate(
-            name=name,
-            input_type="file",
-            category=category,
-            priority=priority,
-            task_metadata=metadata
-        )
-        
-        task = requirement_parse_task.create(db=db, obj_in=task_data)
-        
-        # 更新文件信息
-        task.file_path = file_path
-        task.file_name = file.filename
-        task.file_size = len(content)
-        db.add(task)
-        db.commit()
-        db.refresh(task)
-        
-        # 启动文件处理任务
-        process_requirement_file.delay(task.id, file_path)
-        
-        return task
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"上传需求文件失败: {str(e)}"
-        )
+# 注意：需求文件上传接口已移至 /requirements/upload 路径
+# 此处的重复实现已移除，避免路径冲突
 
 
 @router.get("/requirements", response_model=List[RequirementParseTaskResponse], tags=["需求解析任务"])
