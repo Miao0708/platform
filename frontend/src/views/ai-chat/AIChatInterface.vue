@@ -46,40 +46,53 @@
             </div>
             
             <div class="config-item">
-              <label>Prompt模板：</label>
+              <label>标签筛选：</label>
+              <el-select
+                v-model="selectedTags"
+                placeholder="选择标签"
+                multiple
+                clearable
+                style="width: 200px"
+                @change="onTagsChange"
+              >
+                <el-option
+                  v-for="tag in availableTags"
+                  :key="tag"
+                  :label="tag"
+                  :value="tag"
+                />
+              </el-select>
+            </div>
+            
+            <div class="config-item">
+              <label>Prompt：</label>
               <el-select
                 v-model="selectedPromptId"
-                placeholder="选择Prompt模板"
+                placeholder="选择Prompt"
                 clearable
                 style="width: 250px"
                 @change="onPromptChange"
               >
-                <el-option-group
-                  v-for="category in promptCategories"
-                  :key="category.name"
-                  :label="category.label"
+                <el-option
+                  v-for="prompt in filteredPrompts"
+                  :key="prompt.id"
+                  :label="prompt.name"
+                  :value="prompt.id"
                 >
-                  <el-option
-                    v-for="prompt in category.prompts"
-                    :key="prompt.id"
-                    :label="prompt.name"
-                    :value="prompt.id"
-                  >
-                    <div class="prompt-option">
-                      <span class="prompt-name">{{ prompt.name }}</span>
-                      <div class="prompt-tags">
-                        <el-tag
-                          v-for="tag in prompt.tags"
-                          :key="tag"
-                          size="small"
-                          class="prompt-tag"
-                        >
-                          {{ tag }}
-                        </el-tag>
-                      </div>
+                  <div class="prompt-option">
+                    <span class="prompt-name">{{ prompt.name }}</span>
+                    <div class="prompt-tags">
+                      <el-tag
+                        v-for="tag in prompt.tags"
+                        :key="tag"
+                        size="small"
+                        class="prompt-tag"
+                      >
+                        {{ tag }}
+                      </el-tag>
                     </div>
-                  </el-option>
-                </el-option-group>
+                  </div>
+                </el-option>
               </el-select>
             </div>
           </div>
@@ -207,7 +220,7 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus,
   Loading,
@@ -222,6 +235,7 @@ import { storeToRefs } from 'pinia'
 import MarkdownEditor from '@/components/common/MarkdownEditor.vue'
 import type { AIConversation, AIMessage, AIModelConfig, PromptTemplate } from '@/types'
 import { formatDate } from '@/utils/formatter'
+import { aiModelApi, promptApi } from '@/api/ai'
 
 const userStore = useUserStore()
 const { userInfo } = storeToRefs(userStore)
@@ -235,11 +249,14 @@ const inputMessage = ref('')
 const currentConversationId = ref('')
 const currentModelId = ref('')
 const selectedPromptId = ref('')
+const selectedTags = ref<string[]>([])
 
 // 数据
 const conversations = ref<AIConversation[]>([])
 const availableModels = ref<AIModelConfig[]>([])
 const availablePrompts = ref<PromptTemplate[]>([])
+const availableTags = ref<string[]>([])
+const filteredPrompts = ref<PromptTemplate[]>([])
 
 // 当前对话
 const currentConversation = computed(() => {
@@ -251,24 +268,16 @@ const selectedPrompt = computed(() => {
   return availablePrompts.value.find(p => p.id === selectedPromptId.value)
 })
 
-// Prompt分类
-const promptCategories = computed(() => {
-  const categories = [
-    { name: 'requirement', label: '需求分析', prompts: [] as PromptTemplate[] },
-    { name: 'code_review', label: '代码评审', prompts: [] as PromptTemplate[] },
-    { name: 'test_case', label: '测试用例', prompts: [] as PromptTemplate[] },
-    { name: 'general', label: '通用对话', prompts: [] as PromptTemplate[] }
-  ]
-  
-  availablePrompts.value.forEach(prompt => {
-    const category = categories.find(c => c.name === prompt.category)
-    if (category) {
-      category.prompts.push(prompt)
-    }
-  })
-  
-  return categories.filter(c => c.prompts.length > 0)
-})
+// 根据选择的标签过滤Prompt
+const updateFilteredPrompts = () => {
+  if (selectedTags.value.length === 0) {
+    filteredPrompts.value = availablePrompts.value
+  } else {
+    filteredPrompts.value = availablePrompts.value.filter(prompt => {
+      return selectedTags.value.some(tag => prompt.tags.includes(tag))
+    })
+  }
+}
 
 // 格式化时间
 const formatTime = (timestamp: string) => {
@@ -304,6 +313,15 @@ const selectConversation = (conversationId: string) => {
 const onModelChange = (modelId: string) => {
   if (currentConversation.value) {
     currentConversation.value.modelConfigId = modelId
+  }
+}
+
+// 标签变化
+const onTagsChange = () => {
+  updateFilteredPrompts()
+  // 如果当前选择的Prompt不在过滤结果中，清空选择
+  if (selectedPromptId.value && !filteredPrompts.value.find(p => p.id === selectedPromptId.value)) {
+    selectedPromptId.value = ''
   }
 }
 
@@ -474,7 +492,7 @@ const clearConversation = async () => {
   if (!currentConversation.value) return
   
   try {
-    await ElMessage.confirm('确定要清空当前对话吗？', '确认操作', {
+    await ElMessageBox.confirm('确定要清空当前对话吗？', '确认操作', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
@@ -497,58 +515,25 @@ const scrollToBottom = () => {
 // 加载数据
 const loadData = async () => {
   try {
-    // TODO: 加载可用模型和Prompt模板
-    // 模拟数据
-    availableModels.value = [
-      {
-        id: '1',
-        name: 'OpenAI GPT-4o',
-        provider: 'openai',
-        baseUrl: 'https://api.openai.com/v1',
-        apiKey: 'sk-***',
-        model: 'gpt-4o',
-        isDefault: true,
-        isActive: true,
-        createdAt: '2024-01-15',
-        updatedAt: '2024-01-15'
-      }
-    ]
-    
-    availablePrompts.value = [
-      {
-        id: '1',
-        name: '需求分析专家',
-        identifier: 'requirement_analyst',
-        content: '你是一个专业的需求分析师，请帮我分析以下需求：',
-        category: 'requirement',
-        tags: ['需求分析', '功能设计'],
-        variables: ['requirement'],
-        isPublic: true,
-        usageCount: 0,
-        createdAt: '2024-01-15',
-        updatedAt: '2024-01-15'
-      },
-      {
-        id: '2',
-        name: '代码评审专家',
-        identifier: 'code_reviewer',
-        content: '你是一个资深的代码评审专家，请对以下代码进行详细评审：',
-        category: 'code_review',
-        tags: ['代码评审', '质量检查'],
-        variables: ['code_diff'],
-        isPublic: true,
-        usageCount: 0,
-        createdAt: '2024-01-15',
-        updatedAt: '2024-01-15'
-      }
-    ]
-    
+    // 加载可用模型
+    const modelsResponse = await aiModelApi.getModelConfigs()
+    availableModels.value = modelsResponse
     // 设置默认模型
     if (availableModels.value.length > 0) {
       currentModelId.value = availableModels.value.find(m => m.isDefault)?.id || availableModels.value[0].id
     }
+    
+    // 加载Prompt模板
+    const promptsResponse = await promptApi.getPromptTemplates()
+    availablePrompts.value = promptsResponse
+    updateFilteredPrompts()
+    
+    // 加载所有标签
+    const tagsResponse = await promptApi.getPromptTags()
+    availableTags.value = tagsResponse
   } catch (error) {
     console.error('Load data failed:', error)
+    ElMessage.error('加载数据失败')
   }
 }
 

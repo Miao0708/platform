@@ -61,6 +61,54 @@ class CRUDPromptTemplate(CRUDBase[PromptTemplate, PromptTemplateCreate, PromptTe
         statement = select(PromptTemplate.category).distinct()
         results = db.exec(statement).all()
         return [category for category in results if category is not None]
+    
+    def get_all_tags(self, db: Session) -> List[str]:
+        """获取所有标签"""
+        statement = select(PromptTemplate)
+        prompts = db.exec(statement).all()
+        
+        all_tags = set()
+        for prompt in prompts:
+            if prompt.tags:
+                all_tags.update(prompt.tags)
+        
+        return sorted(list(all_tags))
+    
+    def get_by_tags(self, db: Session, *, tags: List[str]) -> List[PromptTemplate]:
+        """根据标签获取Prompt模板列表（包含任一标签的模板）"""
+        from sqlalchemy import text
+        
+        # 构建SQL查询，检查JSON数组中是否包含任何指定的标签
+        tag_conditions = []
+        for i, tag in enumerate(tags):
+            tag_conditions.append(f"JSON_EXTRACT(tags, '$') LIKE '%\"{tag}\"%'")
+        
+        if not tag_conditions:
+            return []
+        
+        where_clause = " OR ".join(tag_conditions)
+        statement = select(PromptTemplate).where(text(where_clause))
+        
+        return db.exec(statement).all()
+    
+    def get_by_category_and_tags(self, db: Session, *, category: str, tags: List[str]) -> List[PromptTemplate]:
+        """根据分类和标签获取Prompt模板列表"""
+        from sqlalchemy import text
+        
+        # 构建标签条件
+        tag_conditions = []
+        for i, tag in enumerate(tags):
+            tag_conditions.append(f"JSON_EXTRACT(tags, '$') LIKE '%\"{tag}\"%'")
+        
+        if not tag_conditions:
+            return self.get_by_category(db, category=category)
+        
+        tag_where_clause = " OR ".join(tag_conditions)
+        statement = select(PromptTemplate).where(
+            PromptTemplate.category == category
+        ).where(text(tag_where_clause))
+        
+        return db.exec(statement).all()
 
 
 # 创建CRUD实例

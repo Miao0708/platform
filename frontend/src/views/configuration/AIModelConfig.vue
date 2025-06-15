@@ -107,14 +107,34 @@
         </el-form-item>
         
         <el-form-item label="模型名称" prop="model">
-          <el-select v-model="modelForm.model" placeholder="请选择或输入模型名称" filterable allow-create>
-            <el-option
-              v-for="model in getAvailableModels(modelForm.provider)"
-              :key="model.value"
-              :label="model.label"
-              :value="model.value"
-            />
-          </el-select>
+          <div class="model-input-group">
+            <el-select 
+              v-model="modelForm.model" 
+              placeholder="请选择或输入模型名称" 
+              filterable 
+              allow-create
+              style="flex: 1;"
+            >
+              <el-option
+                v-for="model in availableModels"
+                :key="model.value"
+                :label="model.label"
+                :value="model.value"
+              />
+            </el-select>
+            <el-button 
+              type="primary" 
+              @click="fetchModels" 
+              :loading="fetchingModels"
+              :disabled="!modelForm.provider || !modelForm.baseUrl || !modelForm.apiKey"
+              style="margin-left: 8px;"
+            >
+              拉取模型
+            </el-button>
+          </div>
+          <div class="form-tip">
+            支持自动拉取：需要先填写服务商、API地址和密钥，然后点击"拉取模型"按钮
+          </div>
         </el-form-item>
         
         <el-form-item label="最大Token数">
@@ -166,6 +186,7 @@ const modelFormRef = ref<FormInstance>()
 // 加载状态
 const loading = ref(false)
 const saving = ref(false)
+const fetchingModels = ref(false)
 
 // 对话框状态
 const dialogVisible = ref(false)
@@ -173,6 +194,9 @@ const isEdit = ref(false)
 
 // 模型配置列表
 const modelConfigs = ref<(AIModelConfig & { testing?: boolean })[]>([])
+
+// 可用模型列表
+const availableModels = ref<Array<{ label: string; value: string }>>([])
 
 // 模型表单
 const modelForm = reactive({
@@ -284,6 +308,8 @@ const setCommonUrl = (provider: string) => {
 const onProviderChange = (provider: string) => {
   // 清空模型选择
   modelForm.model = ''
+  // 更新可用模型列表
+  availableModels.value = getAvailableModels(provider)
   // 设置默认URL
   setCommonUrl(provider)
   // 设置默认参数
@@ -291,6 +317,46 @@ const onProviderChange = (provider: string) => {
     modelForm.maxTokens = 8192
   } else if (provider === 'claude') {
     modelForm.maxTokens = 8192
+  }
+}
+
+// 拉取可用模型列表
+const fetchModels = async () => {
+  if (!modelForm.provider || !modelForm.baseUrl || !modelForm.apiKey) {
+    ElMessage.warning('请先填写服务商、API地址和密钥')
+    return
+  }
+
+  try {
+    fetchingModels.value = true
+    
+    // 根据不同服务商配置来拉取模型
+    const providerConfig = {
+      provider: modelForm.provider,
+      baseUrl: modelForm.baseUrl,
+      apiKey: modelForm.apiKey
+    }
+
+    // 调用后端API获取模型列表
+    const models = await aiModelsApi.fetchAvailableModels(providerConfig) || []
+    
+    if (models && models.length > 0) {
+      availableModels.value = models.map((model: any) => ({
+        label: model.name || model.id,
+        value: model.id
+      }))
+      ElMessage.success(`成功拉取到 ${models.length} 个模型`)
+    } else {
+      ElMessage.warning('未拉取到可用模型，将使用预设模型列表')
+      availableModels.value = getAvailableModels(modelForm.provider)
+    }
+  } catch (error) {
+    console.error('Fetch models failed:', error)
+    ElMessage.error('拉取模型失败，将使用预设模型列表')
+    // 失败时使用预设模型列表
+    availableModels.value = getAvailableModels(modelForm.provider)
+  } finally {
+    fetchingModels.value = false
   }
 }
 
@@ -340,7 +406,7 @@ const saveModel = async () => {
     }
     
     if (isEdit.value) {
-      await aiModelsApi.updateAIModel(parseInt(modelForm.id), requestData)
+      await aiModelsApi.updateAIModel(modelForm.id, requestData)
     } else {
       await aiModelsApi.createAIModel(requestData)
     }
@@ -361,7 +427,7 @@ const testConnection = async (model: AIModelConfig & { testing?: boolean }) => {
   try {
     model.testing = true
     
-    const result = await aiModelsApi.testConnection(parseInt(model.id))
+    const result = await aiModelsApi.testConnection(model.id)
     
     if (result.success) {
       ElMessage.success('连接测试成功')
@@ -379,7 +445,7 @@ const testConnection = async (model: AIModelConfig & { testing?: boolean }) => {
 // 设置默认模型
 const setDefaultModel = async (model: AIModelConfig) => {
   try {
-    await aiModelsApi.setDefaultModel(parseInt(model.id))
+    await aiModelsApi.setDefaultModel(model.id)
     
     // 取消其他模型的默认状态
     modelConfigs.value.forEach(config => {
@@ -399,7 +465,7 @@ const setDefaultModel = async (model: AIModelConfig) => {
 // 切换模型状态
 const toggleModelStatus = async (model: AIModelConfig) => {
   try {
-    await aiModelsApi.updateAIModel(parseInt(model.id), {
+    await aiModelsApi.updateAIModel(model.id, {
       is_active: model.isActive
     })
     
@@ -429,7 +495,7 @@ const deleteModel = async (model: AIModelConfig) => {
       }
     )
     
-    await aiModelsApi.deleteAIModel(parseInt(model.id))
+    await aiModelsApi.deleteAIModel(model.id)
     
     ElMessage.success('模型配置删除成功')
     loadModelConfigs()
@@ -491,6 +557,15 @@ onMounted(() => {
     padding: 0;
     margin-left: 8px;
     font-size: 12px;
+  }
+}
+
+.model-input-group {
+  display: flex;
+  align-items: center;
+  
+  .el-select {
+    flex: 1;
   }
 }
 </style>

@@ -1,8 +1,8 @@
 """
 Prompt模板相关数据模型
 """
-from typing import Optional
-from sqlmodel import SQLModel, Field, Column, Text
+from typing import Optional, List
+from sqlmodel import SQLModel, Field, Column, Text, JSON
 from app.models.base import BaseModel
 
 
@@ -16,7 +16,10 @@ class PromptTemplate(BaseModel, table=True):
     content: str = Field(sa_column=Column(Text), description="Prompt内容")
     description: Optional[str] = Field(default=None, description="模板说明")
     category: Optional[str] = Field(default=None, description="模板分类")
+    tags: Optional[List[str]] = Field(sa_column=Column(JSON), default_factory=list, description="标签列表")
+    variables: Optional[List[str]] = Field(sa_column=Column(JSON), default_factory=list, description="变量列表")
     is_active: bool = Field(default=True, description="是否激活")
+    usage_count: int = Field(default=0, description="使用次数")
     
     model_config = {
         "json_schema_extra": {

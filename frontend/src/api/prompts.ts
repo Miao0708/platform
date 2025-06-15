@@ -7,26 +7,22 @@ export type PromptCategory = 'requirement' | 'code_review' | 'test_case' | 'gene
 export interface PromptTemplate {
   id: string
   name: string
-  identifier: string
   content: string
   description?: string
   category: PromptCategory
   tags: string[]
   variables: string[]
-  is_public: boolean
-  usage_count: number
-
+  updatedAt?: string
+  createdAt?: string
 }
 
 // 创建Prompt模板请求
 export interface CreatePromptRequest {
   name: string
-  identifier: string
   content: string
   description?: string
   category: PromptCategory
   tags?: string[]
-  is_public?: boolean
 }
 
 // 更新Prompt模板请求
@@ -36,7 +32,6 @@ export interface UpdatePromptRequest {
   description?: string
   category?: PromptCategory
   tags?: string[]
-  is_public?: boolean
 }
 
 // Prompt模板列表查询参数
@@ -82,7 +77,7 @@ export const promptsApi = {
 
   // 复制Prompt模板
   copyPrompt: (id: string, name?: string) => 
-    api.post(`/ai/prompts/${id}/copy`, { name }),
+    api.post(`/ai/prompts/${id}/copy`, { name: name || '' }),
 
   // 获取Prompt模板使用统计
   getPromptStats: (id: string) => 

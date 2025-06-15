@@ -73,9 +73,16 @@ export const promptApi = {
   // 获取Prompt模板列表
   getPromptTemplates: (params?: {
     category?: string
-    tags?: string[]
-    isPublic?: boolean
+    tags?: string  // 多个标签用逗号分隔
+    skip?: number
+    limit?: number
   }) => api.get<PromptTemplate[]>('/ai/prompts', { params }),
+  
+  // 获取所有Prompt标签
+  getPromptTags: () => api.get<string[]>('/ai/prompts/tags'),
+  
+  // 获取Prompt分类
+  getPromptCategories: () => api.get<string[]>('/ai/prompts/categories'),
   
   // 创建Prompt模板
   createPromptTemplate: (data: Omit<PromptTemplate, 'id' | 'usageCount'>) =>

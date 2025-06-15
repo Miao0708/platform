@@ -1,12 +1,19 @@
 import { api } from './index'
 
-// Git凭证接口
-export interface GitCredential {
+// Git托管平台类型
+export type GitPlatform = 'github' | 'gitlab' | 'gitee' | 'coding' | 'custom'
+
+// Git平台配置接口
+export interface GitPlatformConfig {
   id: string
+  name: string  // 平台名称，如：公司GitHub、个人GitLab
+  platform: GitPlatform  // 平台类型
   username: string
   token: string
+  baseUrl?: string  // 自定义平台的基础URL
   isActive: boolean
   createdAt: string
+  updatedAt: string
 }
 
 // Git仓库接口
@@ -15,14 +22,20 @@ export interface GitRepository {
   alias: string
   url: string
   defaultBaseBranch: string
+  platformConfigId: string  // 关联的平台配置ID
+  platformName?: string  // 平台配置名称（用于显示）
   isActive: boolean
   createdAt: string
+  updatedAt: string
 }
 
-// 创建Git凭证请求
-export interface CreateGitCredentialRequest {
+// 创建Git平台配置请求
+export interface CreateGitPlatformRequest {
+  name: string
+  platform: GitPlatform
   username: string
   token: string
+  baseUrl?: string
 }
 
 // 创建Git仓库请求
@@ -30,39 +43,57 @@ export interface CreateGitRepositoryRequest {
   alias: string
   url: string
   defaultBaseBranch?: string
+  platformConfigId: string
 }
 
 // 测试Git连接请求
 export interface TestGitConnectionRequest {
+  platformConfigId?: string
   testUrl?: string
 }
 
+// 保持旧接口兼容性
+export interface GitCredential extends GitPlatformConfig {}
+export interface CreateGitCredentialRequest extends CreateGitPlatformRequest {}
+
 // Git配置API
 export const gitApi = {
-  // === Git凭证管理 ===
-  // 获取Git凭证列表
+  // === Git平台配置管理 ===
+  // 获取Git平台配置列表
+  getPlatformConfigs: () => 
+    api.get('/git/platform-configs'),
+
+  // 创建Git平台配置
+  createPlatformConfig: (data: CreateGitPlatformRequest) => 
+    api.post('/git/platform-configs', data),
+
+  // 更新Git平台配置
+  updatePlatformConfig: (id: string, data: Partial<CreateGitPlatformRequest>) => 
+    api.put(`/git/platform-configs/${id}`, data),
+
+  // 删除Git平台配置
+  deletePlatformConfig: (id: string) => 
+    api.delete(`/git/platform-configs/${id}`),
+
+  // 测试Git平台连接
+  testPlatformConnection: (data: TestGitConnectionRequest) => 
+    api.post('/git/platform-configs/test', data),
+
+  // 兼容旧API
   getCredentials: () => 
-    api.get('/git/credentials'),
+    api.get('/git/platform-configs'),
 
-  // 创建Git凭证
   createCredential: (data: CreateGitCredentialRequest) => 
-    api.post('/git/credentials', data),
+    api.post('/git/platform-configs', data),
 
-  // 更新Git凭证
   updateCredential: (id: string, data: Partial<CreateGitCredentialRequest>) => 
-    api.put(`/git/credentials/${id}`, data),
+    api.put(`/git/platform-configs/${id}`, data),
 
-  // 删除Git凭证
   deleteCredential: (id: string) => 
-    api.delete(`/git/credentials/${id}`),
+    api.delete(`/git/platform-configs/${id}`),
 
-  // 激活Git凭证
-  activateCredential: (id: string) => 
-    api.post(`/git/credentials/${id}/activate`),
-
-  // 测试Git连接
   testConnection: (data?: TestGitConnectionRequest) => 
-    api.post('/git/credentials/test', data || {}),
+    api.post('/git/platform-configs/test', data || {}),
 
   // === Git仓库管理 ===
   // 获取Git仓库列表
@@ -81,10 +112,6 @@ export const gitApi = {
   deleteRepository: (id: string) => 
     api.delete(`/git/repositories/${id}`),
 
-  // 激活Git仓库
-  activateRepository: (id: string) => 
-    api.post(`/git/repositories/${id}/activate`),
-
   // 获取仓库分支列表
   getBranches: (repositoryId: string) => 
     api.get(`/git/repositories/${repositoryId}/branches`),
@@ -98,6 +125,39 @@ export const gitApi = {
 
 // Git工具函数
 export const gitUtils = {
+  // Git平台选项
+  platformOptions: [
+    { label: 'GitHub', value: 'github' as GitPlatform },
+    { label: 'GitLab', value: 'gitlab' as GitPlatform },
+    { label: '码云 Gitee', value: 'gitee' as GitPlatform },
+    { label: 'Coding', value: 'coding' as GitPlatform },
+    { label: '自定义平台', value: 'custom' as GitPlatform }
+  ],
+
+  // 获取平台图标
+  getPlatformIcon: (platform: GitPlatform): string => {
+    const iconMap: Record<GitPlatform, string> = {
+      github: 'github',
+      gitlab: 'gitlab',
+      gitee: 'gitee',
+      coding: 'coding',
+      custom: 'git'
+    }
+    return iconMap[platform] || 'git'
+  },
+
+  // 获取平台颜色
+  getPlatformColor: (platform: GitPlatform): string => {
+    const colorMap: Record<GitPlatform, string> = {
+      github: '#24292e',
+      gitlab: '#fc6d26',
+      gitee: '#c71d23',
+      coding: '#00d8ff',
+      custom: '#666666'
+    }
+    return colorMap[platform] || '#666666'
+  },
+
   // 验证Git URL格式
   isValidGitUrl: (url: string): boolean => {
     const gitUrlRegex = /^(https?:\/\/|git@)[\w\.-]+[\/:][\w\.-]+\/[\w\.-]+\.git$/
@@ -120,28 +180,26 @@ export const gitUtils = {
 
   // 验证分支名称
   isValidBranchName: (branch: string): boolean => {
-    // Git分支名称规则：不能包含空格、特殊字符等
     const branchRegex = /^[a-zA-Z0-9._/-]+$/
     return branchRegex.test(branch) && !branch.startsWith('-') && !branch.endsWith('.')
   },
 
-  // 获取Git服务商
-  getGitProvider: (url: string): string => {
-    if (url.includes('github.com')) return 'GitHub'
-    if (url.includes('gitlab.com')) return 'GitLab'
-    if (url.includes('gitee.com')) return '码云'
-    if (url.includes('coding.net')) return 'Coding'
-    return '其他'
+  // 从URL自动识别Git平台
+  detectPlatform: (url: string): GitPlatform => {
+    if (url.includes('github.com')) return 'github'
+    if (url.includes('gitlab.com')) return 'gitlab'
+    if (url.includes('gitee.com')) return 'gitee'
+    if (url.includes('coding.net')) return 'coding'
+    return 'custom'
   },
 
-  // 格式化凭证显示
-  formatCredential: (credential: GitCredential): string => {
-    return `${credential.username} (${credential.isActive ? '已激活' : '未激活'})`
-  },
-
-  // 验证Git凭证
-  validateCredential: (data: CreateGitCredentialRequest): string[] => {
+  // 验证Git平台配置
+  validatePlatformConfig: (data: CreateGitPlatformRequest): string[] => {
     const errors: string[] = []
+    
+    if (!data.name || data.name.trim().length === 0) {
+      errors.push('平台名称不能为空')
+    }
     
     if (!data.username || data.username.trim().length === 0) {
       errors.push('用户名不能为空')
@@ -153,6 +211,10 @@ export const gitUtils = {
     
     if (data.token && data.token.length < 10) {
       errors.push('访问令牌长度不能少于10位')
+    }
+    
+    if (data.platform === 'custom' && (!data.baseUrl || data.baseUrl.trim().length === 0)) {
+      errors.push('自定义平台需要提供基础URL')
     }
     
     return errors
@@ -172,28 +234,15 @@ export const gitUtils = {
       errors.push('仓库URL格式不正确')
     }
     
+    if (!data.platformConfigId || data.platformConfigId.trim().length === 0) {
+      errors.push('请选择Git平台配置')
+    }
+    
     if (data.defaultBaseBranch && !gitUtils.isValidBranchName(data.defaultBaseBranch)) {
       errors.push('默认分支名称格式不正确')
     }
     
     return errors
-  },
-
-  // 生成Git配置建议
-  generateConfigSuggestions: (url: string) => {
-    const repoName = gitUtils.extractRepoName(url)
-    const provider = gitUtils.getGitProvider(url)
-    
-    return {
-      alias: repoName || '新仓库',
-      defaultBaseBranch: 'main',
-      provider: provider,
-      suggestions: [
-        '建议使用有意义的别名',
-        '确保访问令牌有足够的权限',
-        '推荐使用main作为默认分支'
-      ]
-    }
   }
 }
 

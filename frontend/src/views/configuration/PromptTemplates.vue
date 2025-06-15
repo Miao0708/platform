@@ -1,22 +1,22 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h1 class="page-title">Prompt模板管理</h1>
-      <p class="page-description">创建和管理高质量的Prompt模板，支持链式调用</p>
+      <h1 class="page-title">Prompt管理</h1>
+      <p class="page-description">创建及管理Prompt</p>
     </div>
 
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>模板列表</span>
+          <span>Prompt列表</span>
           <el-button type="primary" @click="showAddDialog">
-            新建模板
+            新建Prompt
           </el-button>
         </div>
       </template>
       
       <el-table :data="templates" style="width: 100%">
-        <el-table-column prop="name" label="模板名称" />
+        <el-table-column prop="name" label="名称" />
         <el-table-column prop="category" label="分类" width="100">
           <template #default="scope">
             <el-tag :type="getCategoryTagType(scope.row.category)">
@@ -36,12 +36,9 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="usageCount" label="使用次数" width="100" />
-        <el-table-column prop="isPublic" label="公开" width="80">
+        <el-table-column prop="updatedAt" label="更新时间" width="180">
           <template #default="scope">
-            <el-tag :type="scope.row.isPublic ? 'success' : 'info'" size="small">
-              {{ scope.row.isPublic ? '公开' : '私有' }}
-            </el-tag>
+            {{ formatTime(scope.row.updatedAt) }}
           </template>
         </el-table-column>
 
@@ -64,7 +61,7 @@
     <!-- 添加/编辑模板对话框 -->
     <el-dialog
       v-model="dialogVisible"
-      :title="isEdit ? '编辑模板' : '新建模板'"
+      :title="isEdit ? '编辑Prompt' : '新建Prompt'"
       width="800px"
       :close-on-click-modal="false"
     >
@@ -74,17 +71,10 @@
         :rules="templateRules"
         label-width="120px"
       >
-        <el-form-item label="模板名称" prop="name">
+        <el-form-item label="Prompt名称" prop="name">
           <el-input
             v-model="templateForm.name"
-            placeholder="请输入模板名称"
-          />
-        </el-form-item>
-
-        <el-form-item label="唯一标识" prop="identifier">
-          <el-input
-            v-model="templateForm.identifier"
-            placeholder="请输入英文标识，如：code_review_security"
+            placeholder="请输入Prompt名称"
           />
         </el-form-item>
 
@@ -133,10 +123,6 @@
             placeholder="请输入模板说明，包括用途、适用场景和变量说明"
           />
         </el-form-item>
-
-        <el-form-item>
-          <el-checkbox v-model="templateForm.isPublic">公开模板（其他用户可见）</el-checkbox>
-        </el-form-item>
       </el-form>
       
       <template #footer>
@@ -150,7 +136,7 @@
     <!-- 模板预览对话框 -->
     <el-dialog
       v-model="previewDialogVisible"
-      title="模板预览"
+      title="Prompt预览"
       width="70%"
     >
       <div v-if="currentPreviewTemplate" class="template-preview">
@@ -199,9 +185,8 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import { promptsApi } from '@/api/prompts'
+import { promptsApi, type PromptTemplate } from '@/api/prompts'
 import MarkdownEditor from '@/components/common/MarkdownEditor.vue'
-import type { PromptTemplate } from '@/types'
 
 // 表单引用
 const templateFormRef = ref<FormInstance>()
@@ -230,22 +215,16 @@ const availableTags = ref(['需求分析', '代码评审', '安全检查', '性�
 const templateForm = reactive({
   id: '',
   name: '',
-  identifier: '',
   content: '',
   description: '',
   category: 'general' as PromptTemplate['category'],
-  tags: [] as string[],
-  isPublic: true
+  tags: [] as string[]
 })
 
 // 表单验证规则
 const templateRules: FormRules = {
   name: [
-    { required: true, message: '请输入模板名称', trigger: 'blur' }
-  ],
-  identifier: [
-    { required: true, message: '请输入唯一标识', trigger: 'blur' },
-    { pattern: /^[a-zA-Z][a-zA-Z0-9_]*$/, message: '标识必须以字母开头，只能包含字母、数字和下划线', trigger: 'blur' }
+    { required: true, message: '请输入Prompt名称', trigger: 'blur' }
   ],
   content: [
     { required: true, message: '请输入模板内容', trigger: 'blur' }
@@ -277,18 +256,29 @@ const getCategoryName = (category: string) => {
   return nameMap[category] || category
 }
 
+// 格式化时间
+const formatTime = (time: string | Date) => {
+  if (!time) return '-'
+  const date = new Date(time)
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
 // 显示添加对话框
 const showAddDialog = () => {
   isEdit.value = false
   Object.assign(templateForm, {
     id: '',
     name: '',
-    identifier: '',
     content: '',
     description: '',
     category: 'general',
-    tags: [],
-    isPublic: true
+    tags: []
   })
   dialogVisible.value = true
 }
@@ -302,7 +292,14 @@ const showPreviewTemplate = (template: PromptTemplate) => {
 // 编辑模板
 const editTemplate = (template: PromptTemplate) => {
   isEdit.value = true
-  Object.assign(templateForm, template)
+  Object.assign(templateForm, {
+    id: template.id,
+    name: template.name,
+    content: template.content,
+    description: template.description,
+    category: template.category,
+    tags: template.tags || []
+  })
   dialogVisible.value = true
 }
 
@@ -316,12 +313,10 @@ const saveTemplate = async () => {
     
     const requestData = {
       name: templateForm.name,
-      identifier: templateForm.identifier,
       content: templateForm.content,
       description: templateForm.description,
       category: templateForm.category,
-      tags: templateForm.tags,
-      is_public: templateForm.isPublic
+      tags: templateForm.tags
     }
     
     if (isEdit.value) {
@@ -330,12 +325,12 @@ const saveTemplate = async () => {
       await promptsApi.createPrompt(requestData)
     }
     
-    ElMessage.success(isEdit.value ? '模板更新成功' : '模板创建成功')
+    ElMessage.success(isEdit.value ? 'Prompt更新成功' : 'Prompt创建成功')
     dialogVisible.value = false
     loadTemplates()
   } catch (error) {
     console.error('Save template failed:', error)
-    ElMessage.error(isEdit.value ? '模板更新失败' : '模板创建失败')
+    ElMessage.error(isEdit.value ? 'Prompt更新失败' : 'Prompt创建失败')
   } finally {
     saving.value = false
   }
@@ -345,7 +340,7 @@ const saveTemplate = async () => {
 const deleteTemplate = async (template: PromptTemplate) => {
   try {
     await ElMessageBox.confirm(
-      `确定要删除模板 "${template.name}" 吗？`,
+      `确定要删除Prompt "${template.name}" 吗？`,
       '确认删除',
       {
         confirmButtonText: '确定',
@@ -356,12 +351,12 @@ const deleteTemplate = async (template: PromptTemplate) => {
     
     await promptsApi.deletePrompt(template.id)
     
-    ElMessage.success('模板删除成功')
+    ElMessage.success('Prompt删除成功')
     loadTemplates()
   } catch (error: any) {
     if (error?.name !== 'cancel') {
       console.error('Delete template failed:', error)
-      ElMessage.error('模板删除失败')
+      ElMessage.error('Prompt删除失败')
     }
   }
 }
@@ -377,27 +372,22 @@ const loadTemplates = async () => {
     templates.value = (result || []).map((template: any) => ({
       id: template.id,
       name: template.name,
-      identifier: template.identifier,
       content: template.content,
       description: template.description,
       category: template.category,
       tags: template.tags || [],
-      variables: template.variables || [],
-      isPublic: template.is_public,
-      usageCount: template.usage_count,
-      
+      updatedAt: template.updated_at || template.updatedAt
     }))
   } catch (error) {
     console.error('Load templates failed:', error)
-    ElMessage.error('加载模板列表失败')
+    ElMessage.error('加载Prompt列表失败')
     
     // 保留一些模拟数据作为备用
     templates.value = [
-      {
-        id: '1',
-        name: '代码评审-安全漏洞扫描',
-        identifier: 'code_review_security',
-        content: `你是一个代码安全专家，请仔细分析以下代码变更，识别潜在的安全漏洞：
+              {
+          id: '1',
+          name: '代码评审-安全漏洞扫描',
+          content: `你是一个代码安全专家，请仔细分析以下代码变更，识别潜在的安全漏洞：
 
 ## 代码差异
 {{code_diff}}
@@ -410,18 +400,16 @@ const loadTemplates = async () => {
 5. 检查输入验证缺陷
 
 请提供详细的安全分析报告。`,
-        description: '专门用于检测代码中的安全问题，包括SQL注入、XSS、权限控制等常见安全漏洞',
-        category: 'code_review' as const,
-        tags: ['安全检查', '代码评审', '漏洞扫描'],
-        variables: ['code_diff'],
-        isPublic: true,
-        usageCount: 156
-      },
-      {
-        id: '2',
-        name: '需求分析-功能拆解',
-        identifier: 'requirement_analysis',
-        content: `你是一个资深的产品经理，请对以下需求进行详细分析：
+          description: '专门用于检测代码中的安全问题，包括SQL注入、XSS、权限控制等常见安全漏洞',
+          category: 'code_review' as const,
+          tags: ['安全检查', '代码评审', '漏洞扫描'],
+          variables: ['code_diff'],
+          updatedAt: '2024-01-15 14:30:00'
+        },
+              {
+          id: '2',
+          name: '需求分析-功能拆解',
+          content: `你是一个资深的产品经理，请对以下需求进行详细分析：
 
 ## 原始需求
 {{requirement}}
@@ -434,18 +422,16 @@ const loadTemplates = async () => {
 5. **优先级建议**：给出功能优先级建议
 
 请提供结构化的需求分析报告。`,
-        description: '用于分析和拆解产品需求，生成结构化的需求文档',
-        category: 'requirement' as const,
-        tags: ['需求分析', '功能拆解', '用户故事'],
-        variables: ['requirement'],
-        isPublic: true,
-        usageCount: 89
-      },
-      {
-        id: '3',
-        name: '测试用例生成',
-        identifier: 'test_case_generation',
-        content: `你是一个测试专家，请根据以下需求生成详细的测试用例：
+          description: '用于分析和拆解产品需求，生成结构化的需求文档',
+          category: 'requirement' as const,
+          tags: ['需求分析', '功能拆解', '用户故事'],
+          variables: ['requirement'],
+          updatedAt: '2024-01-14 16:45:00'
+        },
+              {
+          id: '3',
+          name: '测试用例生成',
+          content: `你是一个测试专家，请根据以下需求生成详细的测试用例：
 
 ## 需求描述
 {{requirement}}
@@ -461,13 +447,12 @@ const loadTemplates = async () => {
 5. **安全测试**：安全相关的测试用例
 
 请按照标准格式生成测试用例。`,
-        description: '根据需求和代码自动生成全面的测试用例',
-        category: 'test_case' as const,
-        tags: ['测试用例', '自动化测试', '质量保证'],
-        variables: ['requirement', 'code_diff'],
-        isPublic: true,
-        usageCount: 234
-      }
+          description: '根据需求和代码自动生成全面的测试用例',
+          category: 'test_case' as const,
+          tags: ['测试用例', '自动化测试', '质量保证'],
+          variables: ['requirement', 'code_diff'],
+          updatedAt: '2024-01-13 09:20:00'
+        }
     ]
   }
 }

@@ -20,15 +20,25 @@ router = APIRouter()
 def get_prompts(
     db: Session = Depends(get_db),
     category: Optional[str] = None,
+    tags: Optional[str] = None,  # 支持多个标签，用逗号分隔
     skip: int = 0,
     limit: int = 100
 ):
     """获取Prompt模板列表"""
     try:
-        print(f"[DEBUG] get_prompts called with category={category}, skip={skip}, limit={limit}")
+        print(f"[DEBUG] get_prompts called with category={category}, tags={tags}, skip={skip}, limit={limit}")
         
-        if category:
+        # 解析标签
+        tag_list = []
+        if tags:
+            tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
+        
+        if category and tag_list:
+            prompts = prompt_template.get_by_category_and_tags(db, category=category, tags=tag_list)
+        elif category:
             prompts = prompt_template.get_by_category(db, category=category)
+        elif tag_list:
+            prompts = prompt_template.get_by_tags(db, tags=tag_list)
         else:
             prompts = prompt_template.get_multi(db, skip=skip, limit=limit)
         
@@ -43,19 +53,19 @@ def get_prompts(
                 "content": prompt.content,
                 "description": prompt.description,
                 "category": prompt.category,
-                "variables": [],  # 暂时返回空数组
+                "tags": prompt.tags or [],
+                "variables": prompt.variables or [],
                 "is_active": prompt.is_active,
-                "usage_count": 0  # 暂时返回0
+                "usage_count": prompt.usage_count
             }
             prompt_list.append(prompt_data)
         
         print(f"[DEBUG] Returning {len(prompt_list)} prompts")
         
-        return {
-            "success": True,
-            "data": prompt_list,
-            "message": "获取Prompt模板列表成功"
-        }
+        return StandardJSONResponse(
+            content=prompt_list,
+            message="获取Prompt模板列表成功"
+        )
         
     except Exception as e:
         import traceback
@@ -63,11 +73,11 @@ def get_prompts(
         print(f"[ERROR] get_prompts failed: {str(e)}")
         print(f"[ERROR] Traceback: {error_detail}")
         
-        return {
-            "success": False,
-            "data": None,
-            "message": f"获取Prompt模板列表失败: {str(e)}"
-        }
+        return StandardJSONResponse(
+            content=None,
+            status_code=500,
+            message=f"获取Prompt模板列表失败: {str(e)}"
+        )
 
 
 @router.post("/prompts", tags=["AI Prompt"])
@@ -303,4 +313,22 @@ def get_prompt_categories(db: Session = Depends(get_db)):
             content=None,
             status_code=500,
             message=f"获取Prompt分类失败: {str(e)}"
+        )
+
+
+@router.get("/prompts/tags", tags=["AI Prompt"])
+def get_prompt_tags(db: Session = Depends(get_db)):
+    """获取所有Prompt标签"""
+    try:
+        tags = prompt_template.get_all_tags(db)
+        
+        return StandardJSONResponse(
+            content=tags,
+            message="获取Prompt标签成功"
+        )
+    except Exception as e:
+        return StandardJSONResponse(
+            content=None,
+            status_code=500,
+            message=f"获取Prompt标签失败: {str(e)}"
         )

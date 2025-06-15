@@ -28,33 +28,36 @@ export interface AIModel {
 export interface CreateAIModelRequest {
   name: string
   provider: string
-  baseUrl: string
-  apiKey?: string
+  base_url: string  // 后端使用snake_case
+  api_key?: string  // 后端使用snake_case
   model: string
-  maxTokens?: number
+  max_tokens?: number
   temperature?: number
-  topP?: number
-  frequencyPenalty?: number
-  presencePenalty?: number
-  isDefault?: boolean
-  isActive?: boolean
+  top_p?: number
+  frequency_penalty?: number
+  presence_penalty?: number
+  is_default?: boolean
+  is_active?: boolean
   timeout?: number
-  extraConfig?: Record<string, any>
+  extra_config?: Record<string, any>
 }
 
 // 更新 AI 模型请求参数
 export interface UpdateAIModelRequest {
   name?: string
   provider?: string
-  modelName?: string
-  apiKey?: string
-  baseUrl?: string
-  parameters?: {
-    temperature?: number
-    maxTokens?: number
-    [key: string]: any
-  }
-  isActive?: boolean
+  model?: string
+  api_key?: string
+  base_url?: string
+  max_tokens?: number
+  temperature?: number
+  top_p?: number
+  frequency_penalty?: number
+  presence_penalty?: number
+  is_default?: boolean
+  is_active?: boolean
+  timeout?: number
+  extra_config?: Record<string, any>
 }
 
 // 测试连接响应
@@ -99,7 +102,15 @@ export const aiModelsApi = {
 
   // 设置默认模型
   setDefaultModel: (id: string) =>
-    api.post(`/ai/models/${id}/set-default`)
+    api.post(`/ai/models/${id}/set-default`),
+
+  // 拉取可用模型列表
+  fetchAvailableModels: (config: { provider: string; baseUrl: string; apiKey: string }) =>
+    api.post<{ value: string; label: string; description?: string }[]>('/ai/models/fetch', {
+      provider: config.provider,
+      base_url: config.baseUrl,
+      api_key: config.apiKey
+    })
 }
 
 export default aiModelsApi 

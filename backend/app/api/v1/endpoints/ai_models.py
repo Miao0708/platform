@@ -330,3 +330,33 @@ def set_default_model(
             status_code=500,
             message=f"设置默认AI模型失败: {str(e)}"
         )
+
+
+@router.post("/models/fetch", tags=["AI模型"])
+async def fetch_available_models(
+    *,
+    db: Session = Depends(get_db),
+    provider: str,
+    base_url: str,
+    api_key: str
+):
+    """从AI服务商获取可用模型列表"""
+    try:
+        from app.services.model_fetcher import fetch_models_from_provider
+        
+        models = await fetch_models_from_provider(
+            provider=provider,
+            base_url=base_url,
+            api_key=api_key
+        )
+        
+        return StandardJSONResponse(
+            content=models,
+            message=f"成功获取 {provider} 的模型列表"
+        )
+    except Exception as e:
+        return StandardJSONResponse(
+            content=[],
+            status_code=400,
+            message=f"获取模型列表失败: {str(e)}"
+        )

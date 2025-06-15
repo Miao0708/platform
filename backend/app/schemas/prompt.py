@@ -13,6 +13,8 @@ class PromptTemplateCreate(BaseModel):
     content: str = Field(..., description="Prompt内容")
     description: Optional[str] = Field(None, description="模板说明")
     category: Optional[str] = Field(None, description="模板分类")
+    tags: Optional[list[str]] = Field(default_factory=list, description="标签列表")
+    variables: Optional[list[str]] = Field(default_factory=list, description="变量列表")
     
     model_config = {
         "json_schema_extra": {
@@ -36,6 +38,8 @@ class PromptTemplateUpdate(BaseModel):
     content: Optional[str] = Field(None, description="Prompt内容")
     description: Optional[str] = Field(None, description="模板说明")
     category: Optional[str] = Field(None, description="模板分类")
+    tags: Optional[list[str]] = Field(None, description="标签列表")
+    variables: Optional[list[str]] = Field(None, description="变量列表")
     is_active: Optional[bool] = Field(None, description="是否激活")
 
 
@@ -47,7 +51,10 @@ class PromptTemplateResponse(BaseModel):
     content: str
     description: Optional[str]
     category: Optional[str]
+    tags: Optional[list[str]]
+    variables: Optional[list[str]]
     is_active: bool
+    usage_count: int
     created_at: datetime
     updated_at: Optional[datetime]
     
