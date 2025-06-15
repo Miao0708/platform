@@ -19,7 +19,7 @@ from app.schemas.requirement import (
 from app.core.response import StandardJSONResponse
 from app.core.config import settings
 from app.services.requirement_service import requirement_task_service
-from app.utils.file_processor import FileProcessor, get_supported_file_types
+from app.utils.file_processor import FileProcessor
 
 router = APIRouter()
 
@@ -99,7 +99,7 @@ async def upload_requirement_file(
     if not FileProcessor.is_supported_file(file.filename):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"不支持的文件类型。支持的类型: {', '.join(get_supported_file_types())}"
+            detail=f"不支持的文件类型。支持的类型: {', '.join(FileProcessor.SUPPORTED_EXTENSIONS)}"
         )
     
     # 验证文件大小
@@ -377,7 +377,7 @@ def delete_requirement_test_task(
 def get_supported_file_types_api():
     """获取支持的文件类型"""
     return {
-        "supported_types": get_supported_file_types(),
+        "supported_types": FileProcessor.SUPPORTED_EXTENSIONS,
         "max_file_size_mb": FileProcessor.MAX_FILE_SIZE / 1024 / 1024
     }
 

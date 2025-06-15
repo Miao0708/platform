@@ -13,7 +13,7 @@ from app.crud.crud_requirement import requirement_document, requirement_analysis
 from app.crud.crud_prompt import prompt_template
 from app.crud.crud_ai_model import ai_model_config
 from app.services.ai_service import AIService
-from app.utils.file_processor import extract_file_content
+from app.utils.file_processor import FileProcessor
 import logging
 
 logger = logging.getLogger(__name__)
@@ -227,7 +227,7 @@ class RequirementBackgroundTaskService:
                 )
                 
                 # 提取文件内容
-                success, content, error_msg = extract_file_content(file_path)
+                success, content, error_msg = FileProcessor.extract_file_content(file_path)
                 
                 if success and content:
                     # 更新需求文档内容

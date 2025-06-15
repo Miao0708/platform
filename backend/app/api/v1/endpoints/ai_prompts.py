@@ -61,7 +61,7 @@ def get_prompts(
         
         return StandardJSONResponse(
             content=prompt_list,
-            message="获取Prompt模板列表成功"
+            message="获取Prompt列表成功"
         )
         
     except Exception as e:
@@ -128,18 +128,16 @@ def get_prompt_detail(
         prompt_data = {
             "id": str(prompt.id),
             "name": prompt.name,
-            "identifier": prompt.identifier,
             "content": prompt.content,
             "description": prompt.description,
             "category": prompt.category,
-            "variables": [],  # 暂时返回空数组
-            "is_active": prompt.is_active,
-            "usage_count": 0  # 暂时返回0
+            "tags": prompt.tags or [],
+            "updated_at": prompt.updated_at.isoformat() if prompt.updated_at else prompt.created_at.isoformat()
         }
         
         return StandardJSONResponse(
             content=prompt_data,
-            message="获取Prompt模板详情成功"
+            message="获取Prompt详情成功"
         )
     except Exception as e:
         return StandardJSONResponse(
@@ -166,32 +164,21 @@ def update_prompt(
                 message="Prompt模板不存在"
             )
         
-        # 如果更新标识符，检查是否冲突
-        if prompt_in.identifier and prompt_in.identifier != prompt.identifier:
-            existing_prompt = prompt_template.get_by_identifier(db, identifier=prompt_in.identifier)
-            if existing_prompt:
-                return StandardJSONResponse(
-                    content=None,
-                    status_code=400,
-                    message=f"标识符 '{prompt_in.identifier}' 已存在"
-                )
-        
         updated_prompt = prompt_template.update(db=db, db_obj=prompt, obj_in=prompt_in)
         
         prompt_data = {
             "id": str(updated_prompt.id),
             "name": updated_prompt.name,
-            "identifier": updated_prompt.identifier,
             "content": updated_prompt.content,
             "description": updated_prompt.description,
             "category": updated_prompt.category,
-            "variables": [],  # 暂时返回空数组
-            "is_active": updated_prompt.is_active
+            "tags": updated_prompt.tags or [],
+            "updated_at": updated_prompt.updated_at.isoformat() if updated_prompt.updated_at else updated_prompt.created_at.isoformat()
         }
         
         return StandardJSONResponse(
             content=prompt_data,
-            message="Prompt模板更新成功"
+            message="Prompt更新成功"
         )
     except Exception as e:
         return StandardJSONResponse(

@@ -37,6 +37,22 @@ class AIModelConfig(BaseModel, table=True):
     # 额外配置
     extra_config: Optional[dict] = Field(sa_column=Column(JSON), default=None, description="额外配置参数")
     
+    def to_dict(self) -> dict:
+        """转换为字典格式，用于AI服务调用"""
+        return {
+            "model_name": self.model,
+            "provider": self.provider,
+            "base_url": self.base_url,
+            "api_key": self.api_key,
+            "max_tokens": self.max_tokens,
+            "temperature": self.temperature,
+            "top_p": self.top_p,
+            "frequency_penalty": self.frequency_penalty,
+            "presence_penalty": self.presence_penalty,
+            "timeout": self.timeout,
+            "extra_config": self.extra_config or {}
+        }
+
     model_config = {
         "json_schema_extra": {
             "examples": [
