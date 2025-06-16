@@ -134,10 +134,17 @@ const menuRoutes = computed(() => [
     },
     children: [
       {
-        path: '/requirements/list',
+        path: '/requirements/documents',
         meta: {
-          title: '需求列表',
+          title: '需求文档管理',
           icon: 'List'
+        }
+      },
+      {
+        path: '/requirements/test-analysis',
+        meta: {
+          title: '需求测试分析',
+          icon: 'ChatDotRound'
         }
       }
     ]

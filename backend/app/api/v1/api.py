@@ -83,7 +83,7 @@ api_router.include_router(
 # 知识库管理相关路由
 api_router.include_router(
     knowledge_base.router,
-    prefix="/knowledge-base",
+    prefix="/knowledge-bases",
     tags=["知识库"]
 )
 

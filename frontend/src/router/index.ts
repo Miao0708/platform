@@ -82,19 +82,28 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/requirements',
     component: Layout,
-    redirect: '/requirements/list',
+    redirect: '/requirements/documents',
     meta: {
       title: '需求管理',
       icon: 'Document'
     },
     children: [
       {
-        path: 'list',
-        name: 'RequirementList',
-        component: () => import('@/views/requirements/RequirementList.vue'),
+        path: 'documents',
+        name: 'RequirementDocuments',
+        component: () => import('@/views/requirement/RequirementDocumentList.vue'),
         meta: {
-          title: '需求列表',
+          title: '需求文档管理',
           icon: 'List'
+        }
+      },
+      {
+        path: 'test-analysis',
+        name: 'RequirementTestAnalysis',
+        component: () => import('@/views/requirement/RequirementTestAnalysis.vue'),
+        meta: {
+          title: '需求测试分析',
+          icon: 'ChatDotRound'
         }
       }
     ]

@@ -358,6 +358,7 @@ const deleteTemplate = async (template: PromptTemplate) => {
       console.error('Delete template failed:', error)
       ElMessage.error('Prompt删除失败')
     }
+    // 用户取消删除时不显示任何提示信息
   }
 }
 

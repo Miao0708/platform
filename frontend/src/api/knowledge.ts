@@ -1,29 +1,31 @@
 import { api } from './index'
 
-// 知识库接口
+// 知识库接口（字段名已通过caseConverter转换为驼峰格式）
 export interface KnowledgeBase {
   id: string
   name: string
   description?: string
-  document_count: number
-  total_size: number
-  is_active: boolean
-  created_at: string
-  updated_at?: string
+  documentCount: number
+  totalSize: number
+  isActive: boolean
+  createdAt: string
+  updatedAt?: string
 }
 
-// 知识库文档接口
+// 知识库文档接口（字段名已通过caseConverter转换为驼峰格式）
 export interface KnowledgeDocument {
   id: string
-  knowledge_base_id: string
+  knowledgeBaseId: string
   filename: string
-  file_size: number
-  file_type: string
+  originalFilename?: string
+  fileSize: number
+  fileType: string
   content?: string
-  vector_count: number
-  status: 'processing' | 'completed' | 'failed'
-  error_message?: string
-  created_at: string
+  vectorCount?: number
+  status: 'pending' | 'processing' | 'completed' | 'failed'
+  errorMessage?: string
+  createdAt: string
+  updatedAt?: string
 }
 
 // 创建知识库请求

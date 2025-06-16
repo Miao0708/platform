@@ -16,6 +16,28 @@ from app.services.prompt_service import prompt_service
 router = APIRouter()
 
 
+@router.get("", tags=["AI Prompt"])
+def get_prompts_root(
+    db: Session = Depends(get_db),
+    category: Optional[str] = None,
+    tags: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100
+):
+    """获取Prompt模板列表（根路径）"""
+    return get_prompts(db=db, category=category, tags=tags, skip=skip, limit=limit)
+
+
+@router.post("", tags=["AI Prompt"])
+def create_prompt_root(
+    *,
+    db: Session = Depends(get_db),
+    prompt_in: PromptTemplateCreate
+):
+    """创建Prompt模板（根路径）"""
+    return create_prompt(db=db, prompt_in=prompt_in)
+
+
 @router.get("/prompts", tags=["AI Prompt"])
 def get_prompts(
     db: Session = Depends(get_db),
@@ -107,6 +129,49 @@ def create_prompt(
             status_code=500,
             message=f"创建Prompt失败: {str(e)}"
         )
+
+
+@router.get("/categories", tags=["AI Prompt"])
+def get_prompt_categories_root(db: Session = Depends(get_db)):
+    """获取Prompt模板分类（根路径）"""
+    return get_prompt_categories(db)
+
+
+@router.get("/tags", tags=["AI Prompt"])
+def get_prompt_tags_root(db: Session = Depends(get_db)):
+    """获取所有Prompt标签（根路径）"""
+    return get_prompt_tags(db)
+
+
+@router.get("/{prompt_id}", tags=["AI Prompt"])
+def get_prompt_detail_root(
+    *,
+    db: Session = Depends(get_db),
+    prompt_id: str
+):
+    """获取Prompt模板详情（根路径）"""
+    return get_prompt_detail(db=db, prompt_id=prompt_id)
+
+
+@router.put("/{prompt_id}", tags=["AI Prompt"])
+def update_prompt_root(
+    *,
+    db: Session = Depends(get_db),
+    prompt_id: str,
+    prompt_in: PromptTemplateUpdate
+):
+    """更新Prompt模板（根路径）"""
+    return update_prompt(db=db, prompt_id=prompt_id, prompt_in=prompt_in)
+
+
+@router.delete("/{prompt_id}", tags=["AI Prompt"])
+def delete_prompt_root(
+    *,
+    db: Session = Depends(get_db),
+    prompt_id: str
+):
+    """删除Prompt模板（根路径）"""
+    return delete_prompt(db=db, prompt_id=prompt_id)
 
 
 @router.get("/prompts/{prompt_id}", tags=["AI Prompt"])

@@ -18,21 +18,33 @@
       <el-table :data="knowledgeBases" style="width: 100%">
         <el-table-column prop="name" label="知识库名称" />
         <el-table-column prop="description" label="说明" show-overflow-tooltip />
-        <el-table-column prop="documentCount" label="文档数量" />
-
-        <el-table-column label="操作" width="200">
+        <el-table-column prop="documentCount" label="文档数量" width="100" />
+        <el-table-column prop="totalSize" label="总大小" width="120">
           <template #default="scope">
-            <el-button type="text" @click="manageDocuments(scope.row)">
-              管理文档
-            </el-button>
-            <el-button type="text" @click="editKnowledgeBase(scope.row)">
-              编辑
-            </el-button>
-            <el-button type="text" @click="deleteKnowledgeBase(scope.row)" style="color: #f56c6c">
-              删除
-            </el-button>
+            {{ formatFileSize(scope.row.totalSize || 0) }}
           </template>
         </el-table-column>
+        <el-table-column prop="isActive" label="状态" width="80">
+          <template #default="scope">
+            <el-tag :type="scope.row.isActive ? 'success' : 'danger'">
+              {{ scope.row.isActive ? '启用' : '禁用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+
+                    <el-table-column label="操作" width="200">
+              <template #default="scope">
+                <el-button link @click="manageDocuments(scope.row)">
+                  管理文档
+                </el-button>
+                <el-button link @click="editKnowledgeBase(scope.row)">
+                  编辑
+                </el-button>
+                <el-button link @click="deleteKnowledgeBase(scope.row)" style="color: #f56c6c">
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
       </el-table>
     </el-card>
 
@@ -125,7 +137,7 @@
     
             <el-table-column label="操作" width="100">
               <template #default="scope">
-                <el-button type="text" @click="deleteDocument(scope.row)" style="color: #f56c6c">
+                <el-button link @click="deleteDocument(scope.row)" style="color: #f56c6c">
                   删除
                 </el-button>
               </template>
@@ -180,7 +192,11 @@ const knowledgeBaseRules: FormRules = {
 }
 
 // 上传配置
-const uploadAction = computed(() => '/api/knowledge-base/upload')
+const uploadAction = computed(() => 
+  currentKnowledgeBase.value 
+    ? `/api/v1/knowledge-bases/${currentKnowledgeBase.value.id}/documents/upload`
+    : '/api/v1/knowledge-bases/1/documents/upload'
+)
 const uploadHeaders = computed(() => ({
   Authorization: `Bearer ${localStorage.getItem('token')}`
 }))
@@ -287,14 +303,14 @@ const beforeUpload = (file: File) => {
 }
 
 // 上传成功
-const handleUploadSuccess = (response: any, file: File) => {
-  ElMessage.success(`文件 ${file.name} 上传成功`)
+const handleUploadSuccess = (response: any, uploadFile: any) => {
+  ElMessage.success(`文件 ${uploadFile.name} 上传成功`)
   loadDocuments(currentKnowledgeBase.value!.id)
 }
 
 // 上传失败
-const handleUploadError = (error: any, file: File) => {
-  ElMessage.error(`文件 ${file.name} 上传失败`)
+const handleUploadError = (error: any, uploadFile: any) => {
+  ElMessage.error(`文件 ${uploadFile.name} 上传失败`)
 }
 
 // 删除文档
@@ -321,15 +337,16 @@ const deleteDocument = async (document: KnowledgeDocument) => {
 }
 
 // 格式化文件大小
-const formatFileSize = (size: number) => {
+const formatFileSize = (size: number | null | undefined) => {
+  if (!size || isNaN(size) || size <= 0) return '未知大小'
   if (size < 1024) return size + ' B'
   if (size < 1024 * 1024) return (size / 1024).toFixed(1) + ' KB'
   return (size / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
 // 获取状态标签类型
-const getStatusTagType = (status: string) => {
-  const typeMap: Record<string, string> = {
+const getStatusTagType = (status: string): 'success' | 'primary' | 'warning' | 'info' | 'danger' => {
+  const typeMap: Record<string, 'success' | 'primary' | 'warning' | 'info' | 'danger'> = {
     uploading: 'info',
     processing: 'warning',
     completed: 'success',
@@ -354,15 +371,16 @@ const loadKnowledgeBases = async () => {
   try {
     const result = await knowledgeApi.getKnowledgeBases()
     
-    // 转换数据格式以匹配前端类型
+    // 转换数据格式以匹配前端类型（数据已通过caseConverter自动转换为驼峰格式）
     knowledgeBases.value = (result || []).map((kb: any) => ({
       id: kb.id,
       name: kb.name,
       description: kb.description,
-      documentCount: kb.document_count || 0,
-      totalSize: kb.total_size || 0,
-      isActive: kb.is_active,
-      
+      documentCount: kb.documentCount || 0,
+      totalSize: kb.totalSize || 0,
+      isActive: kb.isActive,
+      createdAt: kb.createdAt,
+      updatedAt: kb.updatedAt
     }))
   } catch (error) {
     console.error('Load knowledge bases failed:', error)
@@ -375,16 +393,18 @@ const loadDocuments = async (knowledgeBaseId: string) => {
   try {
     const result = await knowledgeApi.getDocuments(knowledgeBaseId)
     
-    // 转换数据格式以匹配前端类型
+    // 转换数据格式以匹配前端类型（数据已通过caseConverter自动转换为驼峰格式）
     documents.value = (result || []).map((doc: any) => ({
       id: doc.id,
-      knowledgeBaseId: doc.knowledge_base_id,
+      knowledgeBaseId: doc.knowledgeBaseId,
       filename: doc.filename,
-      fileType: doc.file_type,
-      fileSize: doc.file_size,
+      originalFilename: doc.originalFilename,
+      fileType: doc.fileType,
+      fileSize: doc.fileSize,
       status: doc.status,
-      errorMessage: doc.error_message,
-      
+      errorMessage: doc.errorMessage,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt
     }))
   } catch (error) {
     console.error('Load documents failed:', error)

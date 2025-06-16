@@ -17,6 +17,22 @@ from app.core.llm_client import llm_manager
 router = APIRouter()
 
 
+@router.get("", tags=["AI模型"])
+def get_ai_models_root(db: Session = Depends(get_db)):
+    """获取AI模型列表（根路径）"""
+    return get_ai_models(db)
+
+
+@router.post("", tags=["AI模型"])
+def create_ai_model_root(
+    *,
+    db: Session = Depends(get_db),
+    model_in: AIModelConfigCreate
+):
+    """创建AI模型配置（根路径）"""
+    return create_ai_model(db=db, model_in=model_in)
+
+
 @router.get("/models", tags=["AI模型"])
 def get_ai_models(db: Session = Depends(get_db)):
     """获取AI模型列表"""
@@ -41,10 +57,10 @@ def get_ai_models(db: Session = Depends(get_db)):
                 "timeout": model.timeout,
                 "usage_count": model.usage_count,
                 "total_tokens_used": model.total_tokens_used,
-                "last_used_at": model.last_used_at,
+                "last_used_at": model.last_used_at.isoformat() if model.last_used_at else None,
                 "extra_config": model.extra_config,
-    
-                "updated_at": model.updated_at
+                "created_at": model.created_at.isoformat() if model.created_at else None,
+                "updated_at": model.updated_at.isoformat() if model.updated_at else None
             }
             model_list.append(model_data)
         
@@ -97,6 +113,60 @@ def create_ai_model(
         )
 
 
+@router.post("/fetch", tags=["AI模型"])
+async def fetch_available_models_root(
+    *,
+    db: Session = Depends(get_db),
+    provider: str,
+    base_url: str,
+    api_key: str
+):
+    """从AI服务商获取可用模型列表（根路径）"""
+    return await fetch_available_models(db=db, provider=provider, base_url=base_url, api_key=api_key)
+
+
+@router.get("/{model_id}", tags=["AI模型"])
+def get_ai_model_root(
+    *,
+    db: Session = Depends(get_db),
+    model_id: str
+):
+    """获取AI模型详情（根路径）"""
+    return get_ai_model(db=db, model_id=model_id)
+
+
+@router.put("/{model_id}", tags=["AI模型"])
+def update_ai_model_root(
+    *,
+    db: Session = Depends(get_db),
+    model_id: str,
+    model_in: AIModelConfigUpdate
+):
+    """更新AI模型配置（根路径）"""
+    return update_ai_model(db=db, model_id=model_id, model_in=model_in)
+
+
+@router.delete("/{model_id}", tags=["AI模型"])
+def delete_ai_model_root(
+    *,
+    db: Session = Depends(get_db),
+    model_id: str
+):
+    """删除AI模型配置（根路径）"""
+    return delete_ai_model(db=db, model_id=model_id)
+
+
+@router.post("/{model_id}/test", tags=["AI模型"])
+async def test_ai_model_root(
+    *,
+    db: Session = Depends(get_db),
+    model_id: str,
+    test_request: AIModelTestRequest
+):
+    """测试AI模型连接（根路径）"""
+    return await test_ai_model(db=db, model_id=model_id, test_request=test_request)
+
+
 @router.get("/models/{model_id}", tags=["AI模型"])
 def get_ai_model(
     *,
@@ -129,9 +199,10 @@ def get_ai_model(
             "timeout": model.timeout,
             "usage_count": model.usage_count,
             "total_tokens_used": model.total_tokens_used,
-            "last_used_at": model.last_used_at,
+            "last_used_at": model.last_used_at.isoformat() if model.last_used_at else None,
             "extra_config": model.extra_config,
-
+            "created_at": model.created_at.isoformat() if model.created_at else None,
+            "updated_at": model.updated_at.isoformat() if model.updated_at else None
         }
         
         return StandardJSONResponse(

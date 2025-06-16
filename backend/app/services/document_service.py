@@ -119,11 +119,21 @@ class DocumentProcessor:
             if file_type == 'text/plain':
                 loader = TextLoader(file_path, encoding='utf-8')
             elif file_type == 'text/markdown':
-                loader = UnstructuredMarkdownLoader(file_path)
+                # 对于Markdown文件，先尝试使用unstructured，失败则使用TextLoader
+                try:
+                    loader = UnstructuredMarkdownLoader(file_path)
+                except ImportError:
+                    print("未安装unstructured库，使用TextLoader作为备用方案")
+                    loader = TextLoader(file_path, encoding='utf-8')
             elif file_type == 'application/pdf':
                 loader = PyPDFLoader(file_path)
             elif file_type in ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword']:
-                loader = UnstructuredWordDocumentLoader(file_path)
+                # 对于Word文档，先尝试使用unstructured，失败则返回错误提示
+                try:
+                    loader = UnstructuredWordDocumentLoader(file_path)
+                except ImportError:
+                    print("未安装unstructured库，无法解析Word文档。请安装unstructured库或使用其他格式文件。")
+                    return ["无法解析Word文档：缺少unstructured库。请使用文本文件(.txt)或Markdown文件(.md)代替。"]
             elif file_type == 'text/csv':
                 loader = CSVLoader(file_path)
             else:
@@ -134,6 +144,14 @@ class DocumentProcessor:
         
         except Exception as e:
             print(f"加载文档失败: {e}")
+            # 对于文本文件，提供最后的备用方案
+            if file_type in ['text/plain', 'text/markdown']:
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    return [content]
+                except Exception as e2:
+                    print(f"备用加载方案也失败: {e2}")
             return []
     
     def split_document(

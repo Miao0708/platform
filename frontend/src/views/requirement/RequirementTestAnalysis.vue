@@ -71,6 +71,7 @@
             v-model="taskForm.prompt_template_id"
             placeholder="选择测试分析Prompt模板"
             style="width: 100%"
+            @focus="loadTestPrompts"
           >
             <el-option
               v-for="prompt in testPrompts"
@@ -461,15 +462,28 @@ const loadConfigurations = async () => {
     const modelsResponse = await aiModelApi.getModelConfigs()
     models.value = modelsResponse
     
-    // 加载Prompt模板
-    const promptsResponse = await promptApi.getPromptTemplates({ tags: '测试' })
-    prompts.value = promptsResponse
-    
     // 加载需求文档
     const docsResponse = await getRequirementDocuments({ status: 'completed' })
     requirementDocuments.value = docsResponse
   } catch (error) {
     console.error('加载配置失败:', error)
+  }
+}
+
+// 动态加载测试相关的Prompt模板
+const loadTestPrompts = async () => {
+  if (prompts.value.length > 0) return // 已加载过，避免重复请求
+  
+  try {
+    console.log('Loading test prompts...')
+    const response = await promptApi.getPromptTemplates({ 
+      tags: '测试,需求测试,测试分析,测试用例' 
+    })
+    prompts.value = response
+    console.log('Loaded test prompts:', response)
+  } catch (error) {
+    console.error('加载测试Prompt失败:', error)
+    ElMessage.error('加载测试Prompt失败')
   }
 }
 

@@ -29,6 +29,8 @@ export interface RequirementDocument {
   task_completed_at?: string
   created_at: string
   updated_at?: string
+  // 前端使用的临时状态
+  processing?: boolean
 }
 
 // 创建需求文档请求

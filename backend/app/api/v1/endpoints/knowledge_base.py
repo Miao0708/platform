@@ -50,7 +50,7 @@ def create_knowledge_base(
         )
 
 
-@router.get("/", response_model=List[KnowledgeBaseResponse])
+@router.get("/")
 def read_knowledge_bases(
     db: Session = Depends(get_db),
     skip: int = 0,
@@ -63,7 +63,29 @@ def read_knowledge_bases(
     else:
         kbs = knowledge_base.get_multi(db, skip=skip, limit=limit)
     
-    return kbs
+    # 为每个知识库添加统计信息
+    result = []
+    for kb in kbs:
+        # 获取文档统计
+        doc_stats = document.get_stats_by_kb(db, kb_id=kb.id)
+        
+        kb_dict = {
+            "id": kb.id,
+            "name": kb.name,
+            "description": kb.description,
+            "collection_name": kb.collection_name,
+            "embedding_model": kb.embedding_model,
+            "chunk_size": kb.chunk_size,
+            "chunk_overlap": kb.chunk_overlap,
+            "is_active": kb.is_active,
+            "created_at": kb.created_at.isoformat() if kb.created_at else None,
+            "updated_at": kb.updated_at.isoformat() if kb.updated_at else None,
+            "document_count": doc_stats["total_documents"],
+            "total_size": doc_stats["total_size"]
+        }
+        result.append(kb_dict)
+    
+    return result
 
 
 @router.get("/{kb_id}", response_model=KnowledgeBaseResponse)
@@ -250,7 +272,7 @@ async def upload_document(
         )
 
 
-@router.get("/{kb_id}/documents", response_model=List[DocumentResponse])
+@router.get("/{kb_id}/documents")
 def read_documents(
     *,
     db: Session = Depends(get_db),
@@ -268,15 +290,43 @@ def read_documents(
             detail="知识库不存在"
         )
     
-    if status_filter:
-        docs = document.get_by_status(db, status=status_filter)
-        # 过滤属于当前知识库的文档
-        docs = [doc for doc in docs if doc.knowledge_base_id == kb_id]
-    else:
-        docs = document.get_by_knowledge_base(db, kb_id=kb_id)
-    
-    # 应用分页
-    return docs[skip:skip + limit]
+    try:
+        if status_filter:
+            docs = document.get_by_status(db, status=status_filter)
+            # 过滤属于当前知识库的文档
+            docs = [doc for doc in docs if doc.knowledge_base_id == kb_id]
+        else:
+            docs = document.get_by_knowledge_base(db, kb_id=kb_id)
+        
+        # 应用分页
+        docs = docs[skip:skip + limit]
+        
+        # 转换为响应格式，确保file_size有值
+        doc_list = []
+        for doc in docs:
+            doc_dict = {
+                "id": doc.id,
+                "knowledge_base_id": doc.knowledge_base_id,
+                "filename": doc.filename,
+                "original_filename": doc.original_filename,
+                "file_path": doc.file_path,
+                "file_size": doc.file_size if doc.file_size is not None else 0,
+                "file_type": doc.file_type,
+                "content_hash": doc.content_hash,
+                "status": doc.status,
+                "error_message": doc.error_message,
+                "doc_metadata": doc.doc_metadata,
+                "created_at": doc.created_at.isoformat() if doc.created_at else None,
+                "updated_at": doc.updated_at.isoformat() if doc.updated_at else None
+            }
+            doc_list.append(doc_dict)
+        
+        return doc_list
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取文档列表失败: {str(e)}"
+        )
 
 
 @router.post("/{kb_id}/search", response_model=RAGSearchResponse)

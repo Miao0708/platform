@@ -44,14 +44,26 @@ export interface PromptTemplate extends BaseModel {
 export interface KnowledgeBase extends BaseModel {
   name: string
   description?: string
+  documentCount?: number
+  totalSize?: number
+  isActive?: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface KnowledgeDocument extends BaseModel {
-  knowledgeBaseId: string
+  knowledgeBaseId: string | number
   filename: string
+  originalFilename?: string
+  filePath?: string
   fileType: string
   fileSize: number
-  status: 'uploading' | 'processing' | 'completed' | 'failed'
+  contentHash?: string
+  status: 'pending' | 'uploading' | 'processing' | 'completed' | 'failed'
+  errorMessage?: string
+  docMetadata?: Record<string, any>
+  createdAt?: string
+  updatedAt?: string
 }
 
 // 任务相关类型

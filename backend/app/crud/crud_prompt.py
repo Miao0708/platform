@@ -95,39 +95,40 @@ class CRUDPromptTemplate(CRUDBase[PromptTemplate, PromptTemplateCreate, PromptTe
     
     def get_by_tags(self, db: Session, *, tags: List[str]) -> List[PromptTemplate]:
         """根据标签获取Prompt模板列表（包含任一标签的模板）"""
-        from sqlalchemy import text
-        
-        # 构建SQL查询，检查JSON数组中是否包含任何指定的标签
-        tag_conditions = []
-        for i, tag in enumerate(tags):
-            tag_conditions.append(f"JSON_EXTRACT(tags, '$') LIKE '%\"{tag}\"%'")
-        
-        if not tag_conditions:
+        if not tags:
             return []
         
-        where_clause = " OR ".join(tag_conditions)
-        statement = select(PromptTemplate).where(text(where_clause))
+        # 获取所有模板，然后在Python中过滤
+        statement = select(PromptTemplate)
+        all_prompts = db.exec(statement).all()
         
-        return db.exec(statement).all()
+        filtered_prompts = []
+        for prompt in all_prompts:
+            if prompt.tags:
+                # 检查是否有任何标签匹配
+                if any(tag in prompt.tags for tag in tags):
+                    filtered_prompts.append(prompt)
+        
+        return filtered_prompts
     
     def get_by_category_and_tags(self, db: Session, *, category: str, tags: List[str]) -> List[PromptTemplate]:
         """根据分类和标签获取Prompt模板列表"""
-        from sqlalchemy import text
-        
-        # 构建标签条件
-        tag_conditions = []
-        for i, tag in enumerate(tags):
-            tag_conditions.append(f"JSON_EXTRACT(tags, '$') LIKE '%\"{tag}\"%'")
-        
-        if not tag_conditions:
+        if not tags:
             return self.get_by_category(db, category=category)
         
-        tag_where_clause = " OR ".join(tag_conditions)
-        statement = select(PromptTemplate).where(
-            PromptTemplate.category == category
-        ).where(text(tag_where_clause))
+        # 先按分类筛选
+        statement = select(PromptTemplate).where(PromptTemplate.category == category)
+        category_prompts = db.exec(statement).all()
         
-        return db.exec(statement).all()
+        # 再按标签筛选
+        filtered_prompts = []
+        for prompt in category_prompts:
+            if prompt.tags:
+                # 检查是否有任何标签匹配
+                if any(tag in prompt.tags for tag in tags):
+                    filtered_prompts.append(prompt)
+        
+        return filtered_prompts
 
 
 # 创建CRUD实例
